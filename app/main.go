@@ -9,17 +9,20 @@ var _ = fmt.Print
 
 func main() {
 	for {
-	controlCommand()
+		command := controlCommand()
+	
+       		if command == "exit" {
+			break		
+		}
+		fmt.Println(command + ": command not found")
+	
+	}
 }
 
-
-}
-
-func controlCommand() {
+func controlCommand() string {
 	fmt.Print("$ ")
 	var command string;
 	fmt.Scanln(&command);
-        fmt.Println(command + ": command not found")
-
+	return command
 }
 
