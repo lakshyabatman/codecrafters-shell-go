@@ -8,9 +8,18 @@ import (
 var _ = fmt.Print
 
 func main() {
-	// TODO: Uncomment the code below to pass the first stage
+	for {
+	controlCommand()
+}
+
+
+}
+
+func controlCommand() {
 	fmt.Print("$ ")
 	var command string;
 	fmt.Scanln(&command);
         fmt.Println(command + ": command not found")
+
 }
+
