@@ -32,7 +32,7 @@ func handleCommand(command []string) {
 		if slices.Contains(supportedCommands, command[1]) {
 			fmt.Println(command[1] + " is a shell builtin")			
 		}else {
-			fmt.Println(command[1] + ": command not found")
+			fmt.Println(command[1] + ": not found")
 		}
 	}else  {    
 			fmt.Println(command[0] + ": command not found")
