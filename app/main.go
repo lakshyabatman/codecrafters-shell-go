@@ -28,12 +28,14 @@ func main() {
 func handleCommand(command []string) {
 	if command[0] == "echo" {
 		fmt.Println(strings.Join(command[1:], " "))
-	} else if command[0] == "type" && slices.Contains(supportedCommands, command[1]) {
-	
-		fmt.Println(command[1] + " is a shell builtin")			
-	
+	} else if command[0] == "type" {
+		if slices.Contains(supportedCommands, command[1]) {
+			fmt.Println(command[1] + " is a shell builtin")			
+		}else {
+			fmt.Println(command[1] + ": command not found")
+		}
 	}else  {    
-		fmt.Println(command[0] + ": command not found")
+			fmt.Println(command[0] + ": command not found")
 }
 
 }
