@@ -1,46 +1,63 @@
 package main
 
 import (
-	"fmt"
-	"strings"
 	"bufio"
+	"fmt"
 	"os"
+	"os/exec"
 	"slices"
-	)
+	"strings"
+)
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Print
 
-var supportedCommands = []string{"echo", "exit", "type"}
-
+var buildInCommands = []string{"echo", "exit", "type"}
+var pathValue string = os.Getenv("PATH")
 
 func main() {
 	for {
 		command := controlCommand()
-		
-       		if command[0] == "exit" {
-			break		
-		}else {
+
+		if command[0] == "exit" {
+			break
+		} else {
 			handleCommand(command)
-		}	
+		}
 	}
 }
 func handleCommand(command []string) {
 	if command[0] == "echo" {
 		fmt.Println(strings.Join(command[1:], " "))
 	} else if command[0] == "type" {
-		if slices.Contains(supportedCommands, command[1]) {
-			fmt.Println(command[1] + " is a shell builtin")			
-		}else {
-			fmt.Println(command[1] + ": not found")
+		handleTypeCommand(command)
+	} else {
+		fmt.Println(command[0] + ": command not found")
+	}
+}
+
+func handleTypeCommand(command []string) {
+	if slices.Contains(buildInCommands, command[1]) {
+		fmt.Println(command[1] + " is a shell builtin")
+	} else {
+		path := checkAndGetInPaths(command[1], strings.Split(pathValue, ":"))
+		if path == "" {
+			fmt.Println(command[1] + ": command not found")
+		} else {
+			fmt.Println(command[1] + " is " + path)
 		}
-	}else  {    
-			fmt.Println(command[0] + ": command not found")
+	}
 }
 
+func checkAndGetInPaths(command string, paths []string) string {
+	for _, path := range paths {
+		foundPath, err := exec.LookPath(path + "/" + command)
+		if err == nil {
+			return foundPath
+		}
+	}
+	return ""
 }
-
-
 
 func controlCommand() []string {
 	fmt.Print("$ ")
@@ -51,4 +68,3 @@ func controlCommand() []string {
 	}
 	return strings.Fields(line)
 }
-
