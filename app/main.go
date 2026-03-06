@@ -42,7 +42,7 @@ func handleTypeCommand(command []string) {
 	} else {
 		path := checkAndGetInPaths(command[1], strings.Split(pathValue, ":"))
 		if path == "" {
-			fmt.Println(command[1] + ": command not found")
+			fmt.Println(command[1] + ": not found")
 		} else {
 			fmt.Println(command[1] + " is " + path)
 		}
