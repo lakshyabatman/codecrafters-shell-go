@@ -41,7 +41,7 @@ func handleCommand(command []string) {
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			fmt.Println(string(stdout))
+			fmt.Print(string(stdout))
 		}
 	}
 }
