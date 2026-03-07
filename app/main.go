@@ -35,9 +35,13 @@ func handleCommand(command []string) {
 		currentPath, _ := os.Getwd()
 		fmt.Println(currentPath)
 	} else if command[0] == "cd" {
-		err := os.Chdir(command[1])
+		pathToGo := command[1]
+		if command[1] == "~" {
+			pathToGo = os.Getenv("HOME")
+		}
+		err := os.Chdir(pathToGo)
 		if err != nil {
-			fmt.Println(command[1] + ": No such file or directory")
+			fmt.Println(pathToGo + ": No such file or directory")
 		}
 	} else {
 		path := checkAndGetInPaths(command[0], strings.Split(pathValue, ":"))
