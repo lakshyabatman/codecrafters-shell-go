@@ -12,7 +12,7 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Print
 
-var buildInCommands = []string{"echo", "exit", "type"}
+var buildInCommands = []string{"echo", "exit", "type", "pwd"}
 var pathValue string = os.Getenv("PATH")
 
 func main() {
@@ -31,6 +31,9 @@ func handleCommand(command []string) {
 		fmt.Println(strings.Join(command[1:], " "))
 	} else if command[0] == "type" {
 		handleTypeCommand(command)
+	} else if command[0] == "pwd" {
+		currentPath, _ := os.Getwd()
+		fmt.Println(currentPath)
 	} else {
 		path := checkAndGetInPaths(command[0], strings.Split(pathValue, ":"))
 		if path == "" {
