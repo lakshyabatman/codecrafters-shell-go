@@ -32,7 +32,17 @@ func handleCommand(command []string) {
 	} else if command[0] == "type" {
 		handleTypeCommand(command)
 	} else {
-		fmt.Println(command[0] + ": command not found")
+		path := checkAndGetInPaths(command[0], strings.Split(pathValue, ":"))
+		if path == "" {
+			fmt.Println(command[1] + ": not found")
+		} else {
+			cmd := exec.Command(path, command...)
+			stdout, err := cmd.Output()
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			fmt.Println(string(stdout))
+		}
 	}
 }
 
