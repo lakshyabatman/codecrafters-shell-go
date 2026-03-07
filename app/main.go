@@ -34,7 +34,7 @@ func handleCommand(command []string) {
 	} else {
 		path := checkAndGetInPaths(command[0], strings.Split(pathValue, ":"))
 		if path == "" {
-			fmt.Println(command[1] + ": not found")
+			fmt.Println(command[0] + ": not found")
 		} else {
 			var cmd *exec.Cmd
 			if len(command) == 1 {
