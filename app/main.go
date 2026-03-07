@@ -36,7 +36,7 @@ func handleCommand(command []string) {
 		if path == "" {
 			fmt.Println(command[1] + ": not found")
 		} else {
-			cmd := exec.Command(path, command...)
+			cmd := exec.Command(path, command[1:]...)
 			stdout, err := cmd.Output()
 			if err != nil {
 				fmt.Println(err.Error())
