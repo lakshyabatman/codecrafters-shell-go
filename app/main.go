@@ -101,11 +101,11 @@ func parseCommand() []string {
 	for _, ch := range strings.Trim(line, "\n") {
 		// fmt.P/rintln(res)
 		switch {
-		case ch == '\\':
-			isEscapeMode = true
 		case isEscapeMode:
 			isEscapeMode = false
 			currentWord.WriteRune(ch)
+		case ch == '\\':
+			isEscapeMode = true
 		case ch == '\'' && !isDoubleQuotes:
 			isSingleQuotes = !isSingleQuotes
 
@@ -123,5 +123,6 @@ func parseCommand() []string {
 	if currentWord.Len() > 0 {
 		res = append(res, currentWord.String())
 	}
+	fmt.Println(res)
 	return res
 }
