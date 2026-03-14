@@ -17,7 +17,7 @@ var pathValue string = os.Getenv("PATH")
 
 func main() {
 	for {
-		command := controlCommand()
+		command := parseCommand()
 
 		if command[0] == "exit" {
 			break
@@ -86,12 +86,32 @@ func checkAndGetInPaths(command string, paths []string) string {
 	return ""
 }
 
-func controlCommand() []string {
+func parseCommand() []string {
 	fmt.Print("$ ")
 	reader := bufio.NewReader(os.Stdin)
 	line, err := reader.ReadString('\n')
 	if err != nil {
 		panic("input failed")
 	}
-	return strings.Fields(line)
+	var res []string
+	var currentWord strings.Builder
+	isSingleQuotes := false
+	for _, ch := range line {
+		// fmt.P/rintln(res)
+		switch {
+		case ch == '\'':
+			isSingleQuotes = !isSingleQuotes
+		case ch == ' ' && !isSingleQuotes:
+			if currentWord.Len() > 0 {
+				res = append(res, currentWord.String())
+				currentWord.Reset()
+			}
+		default:
+			currentWord.WriteRune(ch)
+		}
+	}
+	if currentWord.Len() > 0 {
+		res = append(res, currentWord.String())
+	}
+	return res
 }
