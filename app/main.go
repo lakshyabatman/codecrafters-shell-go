@@ -96,12 +96,16 @@ func parseCommand() []string {
 	var res []string
 	var currentWord strings.Builder
 	isSingleQuotes := false
+	isDoubleQuotes := false
 	for _, ch := range strings.Trim(line, "\n") {
 		// fmt.P/rintln(res)
 		switch {
-		case ch == '\'':
+		case ch == '\'' && !isDoubleQuotes:
 			isSingleQuotes = !isSingleQuotes
-		case ch == ' ' && !isSingleQuotes:
+
+		case ch == '"':
+			isDoubleQuotes = !isDoubleQuotes
+		case ch == ' ' && !isSingleQuotes && !isDoubleQuotes:
 			if currentWord.Len() > 0 {
 				res = append(res, currentWord.String())
 				currentWord.Reset()
