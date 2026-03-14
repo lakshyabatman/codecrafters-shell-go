@@ -123,6 +123,6 @@ func parseCommand() []string {
 	if currentWord.Len() > 0 {
 		res = append(res, currentWord.String())
 	}
-	fmt.Println(res)
+	// fmt.Println(res)
 	return res
 }
