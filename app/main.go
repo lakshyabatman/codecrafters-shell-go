@@ -97,9 +97,15 @@ func parseCommand() []string {
 	var currentWord strings.Builder
 	isSingleQuotes := false
 	isDoubleQuotes := false
+	isEscapeMode := false
 	for _, ch := range strings.Trim(line, "\n") {
 		// fmt.P/rintln(res)
 		switch {
+		case ch == '\\':
+			isEscapeMode = true
+		case isEscapeMode:
+			isEscapeMode = false
+			currentWord.WriteRune(ch)
 		case ch == '\'' && !isDoubleQuotes:
 			isSingleQuotes = !isSingleQuotes
 
