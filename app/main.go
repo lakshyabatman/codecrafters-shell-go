@@ -96,7 +96,7 @@ func parseCommand() []string {
 	var res []string
 	var currentWord strings.Builder
 	isSingleQuotes := false
-	for _, ch := range line {
+	for _, ch := range strings.Trim(line, "\n") {
 		// fmt.P/rintln(res)
 		switch {
 		case ch == '\'':
