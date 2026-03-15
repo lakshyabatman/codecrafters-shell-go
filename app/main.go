@@ -104,7 +104,7 @@ func parseCommand() []string {
 		case isEscapeMode:
 			isEscapeMode = false
 			currentWord.WriteRune(ch)
-		case ch == '\\':
+		case ch == '\\' && !isSingleQuotes:
 			isEscapeMode = true
 		case ch == '\'' && !isDoubleQuotes:
 			isSingleQuotes = !isSingleQuotes
