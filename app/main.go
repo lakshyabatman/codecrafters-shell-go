@@ -39,7 +39,7 @@ func main() {
 				fmt.Errorf(err.Error())
 			}
 		default:
-			fmt.Print(res)
+			fmt.Println(res)
 		}
 	}
 }
