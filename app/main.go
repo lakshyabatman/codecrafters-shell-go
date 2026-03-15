@@ -75,14 +75,12 @@ func handleCommand(command []string) string {
 				cmd = exec.Command(command[0], command[1:]...)
 			}
 			stdout, err := cmd.Output()
-
 			if err != nil {
 				if exitErr, ok := err.(*exec.ExitError); ok {
 					fmt.Fprint(os.Stderr, string(exitErr.Stderr)) // real command error
 				} else {
 					fmt.Fprintln(os.Stderr, err) // fallback (e.g. command not found)
 				}
-				return ""
 			}
 			return string(strings.Trim(string(stdout), "\n"))
 		}
