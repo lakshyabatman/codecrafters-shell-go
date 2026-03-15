@@ -73,7 +73,7 @@ func handleCommand(command []string) string {
 			}
 			stdout, err := cmd.Output()
 			if err != nil {
-				fmt.Println(err.Error())
+				return string(err.Error())
 			}
 			return string(strings.Trim(string(stdout), "\n"))
 		}
