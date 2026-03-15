@@ -33,6 +33,7 @@ func main() {
 		} else {
 			res = handleCommand(execTokens)
 		}
+		fmt.Println(res)
 		switch redirectionType {
 		case "redirect":
 			if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
@@ -75,7 +76,7 @@ func handleCommand(command []string) string {
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			return string(stdout)
+			return string(strings.Trim(string(stdout), "\n"))
 		}
 	}
 	return ""
