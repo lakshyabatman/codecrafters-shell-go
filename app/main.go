@@ -33,14 +33,17 @@ func main() {
 		} else {
 			res = handleCommand(execTokens)
 		}
-		switch redirectionType {
-		case "redirect":
-			if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
-				fmt.Errorf(err.Error())
+		if res != "" {
+			switch redirectionType {
+			case "redirect":
+				if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
+					fmt.Errorf(err.Error())
+				}
+			default:
+				fmt.Println(res)
 			}
-		default:
-			fmt.Println(res)
 		}
+
 	}
 }
 func handleCommand(command []string) string {
@@ -75,11 +78,11 @@ func handleCommand(command []string) string {
 
 			if err != nil {
 				if exitErr, ok := err.(*exec.ExitError); ok {
-					return string(exitErr.Stderr)
+					fmt.Fprint(os.Stderr, string(exitErr.Stderr)) // real command error
 				} else {
-					return string(err.Error())
+					fmt.Fprintln(os.Stderr, err) // fallback (e.g. command not found)
 				}
-
+				return ""
 			}
 			return string(strings.Trim(string(stdout), "\n"))
 		}
