@@ -13,27 +13,44 @@ import (
 var _ = fmt.Print
 
 var buildInCommands = []string{"echo", "exit", "type", "pwd"}
+var dividerCommands = []string{">", "1>"}
 var pathValue string = os.Getenv("PATH")
 
 func main() {
 	for {
-		command := parseCommand()
+		fmt.Print("$ ")
+		reader := bufio.NewReader(os.Stdin)
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			panic("input failed")
+		}
+		tokens := parseCommand(line)
+		execTokens, outStd, redirectionType, _ := extractPipelineCommands(tokens)
 
-		if command[0] == "exit" {
+		var res string
+		if tokens[0] == "exit" {
 			break
 		} else {
-			handleCommand(command)
+			res = handleCommand(execTokens)
+		}
+		switch redirectionType {
+		case "redirect":
+			if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
+				fmt.Errorf(err.Error())
+			}
+		default:
+			fmt.Println(res)
 		}
 	}
 }
-func handleCommand(command []string) {
+func handleCommand(command []string) string {
 	if command[0] == "echo" {
-		fmt.Println(strings.Join(command[1:], " "))
+		return strings.Join(command[1:], " ")
 	} else if command[0] == "type" {
-		handleTypeCommand(command)
+		return handleTypeCommand(command)
 	} else if command[0] == "pwd" {
 		currentPath, _ := os.Getwd()
-		fmt.Println(currentPath)
+		return currentPath
 	} else if command[0] == "cd" {
 		pathToGo := command[1]
 		if command[1] == "~" {
@@ -41,12 +58,12 @@ func handleCommand(command []string) {
 		}
 		err := os.Chdir(pathToGo)
 		if err != nil {
-			fmt.Println(pathToGo + ": No such file or directory")
+			return pathToGo + ": No such file or directory"
 		}
 	} else {
 		path := checkAndGetInPaths(command[0], strings.Split(pathValue, ":"))
 		if path == "" {
-			fmt.Println(command[0] + ": not found")
+			return command[0] + ": not found"
 		} else {
 			var cmd *exec.Cmd
 			if len(command) == 1 {
@@ -58,20 +75,21 @@ func handleCommand(command []string) {
 			if err != nil {
 				fmt.Println(err.Error())
 			}
-			fmt.Print(string(stdout))
+			return string(stdout)
 		}
 	}
+	return ""
 }
 
-func handleTypeCommand(command []string) {
+func handleTypeCommand(command []string) string {
 	if slices.Contains(buildInCommands, command[1]) {
-		fmt.Println(command[1] + " is a shell builtin")
+		return command[1] + " is a shell builtin"
 	} else {
 		path := checkAndGetInPaths(command[1], strings.Split(pathValue, ":"))
 		if path == "" {
-			fmt.Println(command[1] + ": not found")
+			return command[1] + ": not found"
 		} else {
-			fmt.Println(command[1] + " is " + path)
+			return command[1] + " is " + path
 		}
 	}
 }
@@ -86,13 +104,8 @@ func checkAndGetInPaths(command string, paths []string) string {
 	return ""
 }
 
-func parseCommand() []string {
-	fmt.Print("$ ")
-	reader := bufio.NewReader(os.Stdin)
-	line, err := reader.ReadString('\n')
-	if err != nil {
-		panic("input failed")
-	}
+func parseCommand(line string) []string {
+
 	var res []string
 	var currentWord strings.Builder
 	isSingleQuotes := false
@@ -125,4 +138,17 @@ func parseCommand() []string {
 	}
 	// fmt.Println(res)
 	return res
+}
+
+func extractPipelineCommands(tokens []string) ([]string, string, string, bool) {
+	for i, t := range tokens {
+		if !slices.Contains(dividerCommands, t) {
+			continue
+		}
+		if i+1 >= len(tokens) {
+			return nil, "", "redirect", false
+		}
+		return tokens[:i], strings.Join(tokens[i+1:], " "), "redirect", true
+	}
+	return tokens, "", "none", true
 }
