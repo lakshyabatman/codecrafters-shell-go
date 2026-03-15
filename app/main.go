@@ -72,7 +72,9 @@ func handleCommand(command []string) string {
 				cmd = exec.Command(command[0], command[1:]...)
 			}
 			stdout, err := cmd.Output()
+
 			if err != nil {
+				fmt.Println(err)
 				return string(err.Error())
 			}
 			return string(strings.Trim(string(stdout), "\n"))
