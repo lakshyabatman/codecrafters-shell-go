@@ -109,7 +109,7 @@ func parseCommand() []string {
 		case ch == '\'' && !isDoubleQuotes:
 			isSingleQuotes = !isSingleQuotes
 
-		case ch == '"':
+		case ch == '"' && !isSingleQuotes:
 			isDoubleQuotes = !isDoubleQuotes
 		case ch == ' ' && !isSingleQuotes && !isDoubleQuotes:
 			if currentWord.Len() > 0 {
