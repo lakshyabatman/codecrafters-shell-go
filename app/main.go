@@ -28,16 +28,31 @@ func main() {
 		execTokens, outStd, redirectionType, _ := extractPipelineCommands(tokens)
 
 		var res string
+		var commandError error
 		if tokens[0] == "exit" {
 			break
 		} else {
-			res = handleCommand(execTokens)
+			res, commandError = handleCommand(execTokens)
 		}
 		if res != "" {
 			switch redirectionType {
 			case "redirect":
 				if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
 					fmt.Errorf(err.Error())
+				}
+				if commandError != nil {
+					if exitErr, ok := err.(*exec.ExitError); ok {
+						fmt.Fprint(os.Stderr, string(exitErr.Stderr)) // real command error
+					} else {
+						fmt.Fprintln(os.Stderr, err) // fallback (e.g. command not found)
+					}
+				}
+			case "redirectError":
+				if err := os.WriteFile(outStd, []byte(err.Error())); err != nil {
+					fmt.Errorf(err.Error())
+				}
+				if res != "" {
+					fmt.Println(res)
 				}
 			default:
 				fmt.Println(res)
@@ -46,14 +61,14 @@ func main() {
 
 	}
 }
-func handleCommand(command []string) string {
+func handleCommand(command []string) (string, error) {
 	if command[0] == "echo" {
-		return strings.Join(command[1:], " ")
+		return strings.Join(command[1:], " "), nil
 	} else if command[0] == "type" {
-		return handleTypeCommand(command)
+		return handleTypeCommand(command), nill
 	} else if command[0] == "pwd" {
 		currentPath, _ := os.Getwd()
-		return currentPath
+		return currentPath, nil
 	} else if command[0] == "cd" {
 		pathToGo := command[1]
 		if command[1] == "~" {
@@ -61,12 +76,12 @@ func handleCommand(command []string) string {
 		}
 		err := os.Chdir(pathToGo)
 		if err != nil {
-			return pathToGo + ": No such file or directory"
+			return pathToGo + ": No such file or directory", err
 		}
 	} else {
 		path := checkAndGetInPaths(command[0], strings.Split(pathValue, ":"))
 		if path == "" {
-			return command[0] + ": not found"
+			return command[0] + ": not found", nil
 		} else {
 			var cmd *exec.Cmd
 			if len(command) == 1 {
@@ -75,17 +90,18 @@ func handleCommand(command []string) string {
 				cmd = exec.Command(command[0], command[1:]...)
 			}
 			stdout, err := cmd.Output()
-			if err != nil {
-				if exitErr, ok := err.(*exec.ExitError); ok {
-					fmt.Fprint(os.Stderr, string(exitErr.Stderr)) // real command error
-				} else {
-					fmt.Fprintln(os.Stderr, err) // fallback (e.g. command not found)
-				}
-			}
-			return string(strings.Trim(string(stdout), "\n"))
+			// if err != nil {
+			// 	if exitErr, ok := err.(*exec.ExitError); ok {
+			// 		fmt.Fprint(os.Stderr, string(exitErr.Stderr)) // real command error
+			// 	} else {
+			// 		fmt.Fprintln(os.Stderr, err) // fallback (e.g. command not found)
+			// 	}
+
+			// }
+			return string(strings.Trim(string(stdout), "\n")), err
 		}
 	}
-	return ""
+	return "", nil
 }
 
 func handleTypeCommand(command []string) string {
@@ -155,7 +171,18 @@ func extractPipelineCommands(tokens []string) ([]string, string, string, bool) {
 		if i+1 >= len(tokens) {
 			return nil, "", "redirect", false
 		}
-		return tokens[:i], strings.Join(tokens[i+1:], " "), "redirect", true
+		var commandType string
+		if t == ">" {
+			commandType = "redirect"
+		}
+		switch {
+		case t == ">" || t == "1>":
+			commandType = "redirect"
+		case t == "2>":
+			commandType = "redirectError"
+		}
+		return tokens[:i], strings.Join(tokens[i+1:], " "), commandType, true
+
 	}
 	return tokens, "", "none", true
 }
