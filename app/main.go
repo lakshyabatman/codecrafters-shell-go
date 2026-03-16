@@ -13,7 +13,7 @@ import (
 var _ = fmt.Print
 
 var buildInCommands = []string{"echo", "exit", "type", "pwd"}
-var dividerCommands = []string{">", "1>"}
+var dividerCommands = []string{">", "1>", "2>"}
 var pathValue string = os.Getenv("PATH")
 
 func main() {
@@ -34,23 +34,18 @@ func main() {
 		} else {
 			res, commandError = handleCommand(execTokens)
 		}
+		errorOutput := parseError(commandError)
 		if res != "" {
 			switch redirectionType {
 			case "redirect":
 				if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
 					fmt.Errorf(err.Error())
 				}
-				if commandError != nil {
-					if exitErr, ok := err.(*exec.ExitError); ok {
-						fmt.Fprint(os.Stderr, string(exitErr.Stderr)) // real command error
-					} else {
-						fmt.Fprintln(os.Stderr, err) // fallback (e.g. command not found)
-					}
+				if errorOutput != "" {
+					fmt.Println(errorOutput)
 				}
 			case "redirectError":
-				if err := os.WriteFile(outStd, []byte(err.Error())); err != nil {
-					fmt.Errorf(err.Error())
-				}
+				os.WriteFile(outStd, []byte(errorOutput), 0644)
 				if res != "" {
 					fmt.Println(res)
 				}
@@ -65,7 +60,7 @@ func handleCommand(command []string) (string, error) {
 	if command[0] == "echo" {
 		return strings.Join(command[1:], " "), nil
 	} else if command[0] == "type" {
-		return handleTypeCommand(command), nill
+		return handleTypeCommand(command), nil
 	} else if command[0] == "pwd" {
 		currentPath, _ := os.Getwd()
 		return currentPath, nil
@@ -90,14 +85,6 @@ func handleCommand(command []string) (string, error) {
 				cmd = exec.Command(command[0], command[1:]...)
 			}
 			stdout, err := cmd.Output()
-			// if err != nil {
-			// 	if exitErr, ok := err.(*exec.ExitError); ok {
-			// 		fmt.Fprint(os.Stderr, string(exitErr.Stderr)) // real command error
-			// 	} else {
-			// 		fmt.Fprintln(os.Stderr, err) // fallback (e.g. command not found)
-			// 	}
-
-			// }
 			return string(strings.Trim(string(stdout), "\n")), err
 		}
 	}
@@ -185,4 +172,11 @@ func extractPipelineCommands(tokens []string) ([]string, string, string, bool) {
 
 	}
 	return tokens, "", "none", true
+}
+
+func parseError(err error) string {
+	if exitErr, ok := err.(*exec.ExitError); ok {
+		return string(exitErr.Stderr)
+	}
+	return fmt.Sprintf("%v", err)
 }
