@@ -35,21 +35,21 @@ func main() {
 			res, commandError = handleCommand(execTokens)
 		}
 		errorOutput := parseError(commandError)
-		if res != "" {
-			switch redirectionType {
-			case "redirect":
-				if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
-					fmt.Errorf(err.Error())
-				}
-				if errorOutput != "" {
-					fmt.Println(errorOutput)
-				}
-			case "redirectError":
-				os.WriteFile(outStd, []byte(errorOutput), 0644)
-				if res != "" {
-					fmt.Println(res)
-				}
-			default:
+		switch redirectionType {
+		case "redirect":
+			if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
+				fmt.Errorf(err.Error())
+			}
+			if errorOutput != "" {
+				fmt.Println(errorOutput)
+			}
+		case "redirectError":
+			os.WriteFile(outStd, []byte(errorOutput), 0644)
+			if res != "" {
+				fmt.Println(res)
+			}
+		default:
+			if res != "" {
 				fmt.Println(res)
 			}
 		}
