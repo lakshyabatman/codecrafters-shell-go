@@ -68,7 +68,7 @@ func main() {
 			}
 			defer f.Close()
 
-			if _, err = f.WriteString(fmt.Sprintf("\n%v", errorOutput)); err != nil {
+			if _, err = f.WriteString(fmt.Sprintf("%v", errorOutput)); err != nil {
 				fmt.Printf("%v\n", err)
 			}
 			if res != "" {
