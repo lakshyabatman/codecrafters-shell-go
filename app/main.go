@@ -55,7 +55,7 @@ func main() {
 			}
 			defer f.Close()
 
-			if _, err = f.WriteString(res); err != nil {
+			if _, err = f.WriteString(fmt.Sprintf("%v\n", res)); err != nil {
 				fmt.Printf("%v\n", err)
 			}
 		default:
