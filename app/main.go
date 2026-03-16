@@ -44,7 +44,9 @@ func main() {
 				fmt.Println(errorOutput)
 			}
 		case "redirectError":
-			os.WriteFile(outStd, []byte(errorOutput), 0644)
+			if errorOutput != "" {
+				os.WriteFile(outStd, []byte(errorOutput), 0644)
+			}
 			if res != "" {
 				fmt.Println(res)
 			}
