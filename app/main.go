@@ -179,7 +179,7 @@ func parseError(err error) string {
 		return ""
 	}
 	if exitErr, ok := err.(*exec.ExitError); ok {
-		return string(exitErr.Stderr)
+		return strings.Trim(string(exitErr.Stderr), "\n")
 	}
 	return fmt.Sprintf("%v", err)
 }
