@@ -13,7 +13,7 @@ import (
 var _ = fmt.Print
 
 var buildInCommands = []string{"echo", "exit", "type", "pwd"}
-var dividerCommands = []string{">", "1>", "2>", ">>", "1>>"}
+var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
 var pathValue string = os.Getenv("PATH")
 
 func main() {
@@ -57,6 +57,19 @@ func main() {
 
 			if _, err = f.WriteString(fmt.Sprintf("\n%v", res)); err != nil {
 				fmt.Printf("%v\n", err)
+			}
+		case "redirectAppendError":
+			f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				fmt.Printf("%v\n", err)
+			}
+			defer f.Close()
+
+			if _, err = f.WriteString(fmt.Sprintf("\n%v", errorOutput)); err != nil {
+				fmt.Printf("%v\n", err)
+			}
+			if res != "" {
+				fmt.Println(res)
 			}
 		default:
 			if res != "" {
@@ -180,6 +193,9 @@ func extractPipelineCommands(tokens []string) ([]string, string, string, bool) {
 
 		case t == ">>" || t == "1>>":
 			commandType = "redirectAppend"
+
+		case t == "2>>":
+			commandType = "redirectAppendError"
 		}
 		return tokens[:i], strings.Join(tokens[i+1:], " "), commandType, true
 
