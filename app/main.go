@@ -58,6 +58,9 @@ func main() {
 			if _, err = f.WriteString(fmt.Sprintf("\n%v", res)); err != nil {
 				fmt.Printf("%v\n", err)
 			}
+			if errorOutput != "" {
+				fmt.Println(errorOutput)
+			}
 		case "redirectAppendError":
 			f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
