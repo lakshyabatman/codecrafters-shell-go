@@ -13,7 +13,7 @@ import (
 var _ = fmt.Print
 
 var buildInCommands = []string{"echo", "exit", "type", "pwd"}
-var dividerCommands = []string{">", "1>", "2>"}
+var dividerCommands = []string{">", "1>", "2>", ">>", "1>>"}
 var pathValue string = os.Getenv("PATH")
 
 func main() {
@@ -47,6 +47,13 @@ func main() {
 			os.WriteFile(outStd, []byte(errorOutput), 0644)
 			if res != "" {
 				fmt.Println(res)
+			}
+		case "redirectAppend":
+			if err := os.WriteFile(outStd, []byte(res), os.ModeAppend); err != nil {
+				fmt.Errorf(err.Error())
+			}
+			if errorOutput != "" {
+				fmt.Println(errorOutput)
 			}
 		default:
 			if res != "" {
@@ -167,6 +174,9 @@ func extractPipelineCommands(tokens []string) ([]string, string, string, bool) {
 			commandType = "redirect"
 		case t == "2>":
 			commandType = "redirectError"
+
+		case t == ">>" || t == "1>>":
+			commandType = "redirectAppend"
 		}
 		return tokens[:i], strings.Join(tokens[i+1:], " "), commandType, true
 
