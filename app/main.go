@@ -49,11 +49,14 @@ func main() {
 				fmt.Println(res)
 			}
 		case "redirectAppend":
-			if err := os.WriteFile(outStd, []byte(res), os.ModeAppend); err != nil {
-				fmt.Errorf(err.Error())
+			f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				fmt.Printf("%v\n", err)
 			}
-			if errorOutput != "" {
-				fmt.Println(errorOutput)
+			defer f.Close()
+
+			if _, err = f.WriteString(res); err != nil {
+				fmt.Printf("%v\n", err)
 			}
 		default:
 			if res != "" {
