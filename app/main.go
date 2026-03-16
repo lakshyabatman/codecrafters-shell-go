@@ -54,10 +54,12 @@ func main() {
 				fmt.Printf("%v\n", err)
 			}
 			defer f.Close()
-
-			if _, err = f.WriteString(fmt.Sprintf("\n%v", res)); err != nil {
-				fmt.Printf("%v\n", err)
+			if res != "" {
+				if _, err = f.WriteString(fmt.Sprintf("\n%v", res)); err != nil {
+					fmt.Printf("%v\n", err)
+				}
 			}
+
 			if errorOutput != "" {
 				fmt.Println(errorOutput)
 			}
