@@ -177,6 +177,9 @@ func extractPipelineCommands(tokens []string) ([]string, string, string, bool) {
 }
 
 func parseError(err error) string {
+	if err == nil {
+		return ""
+	}
 	if exitErr, ok := err.(*exec.ExitError); ok {
 		return string(exitErr.Stderr)
 	}
