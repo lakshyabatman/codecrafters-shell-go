@@ -1,12 +1,13 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 	"os/exec"
 	"slices"
 	"strings"
+
+	"github.com/chzyer/readline"
 )
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
@@ -18,12 +19,28 @@ var pathValue string = os.Getenv("PATH")
 
 func main() {
 	for {
-		fmt.Print("$ ")
-		reader := bufio.NewReader(os.Stdin)
-		line, err := reader.ReadString('\n')
+		completer := readline.NewPrefixCompleter(
+			readline.PcItem("echo"),
+			readline.PcItem("exit"),
+		)
+		cfg := &readline.Config{
+			Prompt:          "$ ",
+			AutoComplete:    completer,
+			InterruptPrompt: "^C",
+			EOFPrompt:       "exit",
+		}
+
+		// Initialize the readline instance.
+		rl, err := readline.NewEx(cfg)
+		if err != nil {
+			panic(err)
+		}
+		defer rl.Close() // Ensure the terminal is restored to its original state on exit
+
 		if err != nil {
 			panic("input failed")
 		}
+		line, err := rl.Readline()
 		tokens := parseCommand(line)
 		execTokens, outStd, redirectionType, _ := extractPipelineCommands(tokens)
 
