@@ -14,7 +14,7 @@ type BellCompleter struct {
 
 func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 	runes, level := b.Completer.Do(line, pos)
-	fmt.Println(level)
+	// fmt.Println(level)/
 	if len(runes) == 0 {
 		paths := strings.Split(os.Getenv("PATH"), ":")
 		candidates := [][]rune{}
