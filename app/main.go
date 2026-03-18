@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/chzyer/readline"
+	"github.com/codecrafters-io/shell-starter-go/app/bellcompleter"
 )
 
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
@@ -19,10 +20,11 @@ var pathValue string = os.Getenv("PATH")
 
 func main() {
 	for {
-		completer := readline.NewPrefixCompleter(
+		prefixCompleter := readline.NewPrefixCompleter(
 			readline.PcItem("echo"),
 			readline.PcItem("exit"),
 		)
+		completer := &bellcompleter.BellCompleter{Completer: prefixCompleter}
 		cfg := &readline.Config{
 			Prompt:          "$ ",
 			AutoComplete:    completer,
