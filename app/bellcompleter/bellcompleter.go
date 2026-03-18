@@ -23,7 +23,8 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 				for _, file := range files {
 					if file.Type().IsRegular() && strings.HasPrefix(file.Name(), string(line)) {
 						if len(file.Name()) > 0 {
-							candidates = append(candidates, []rune(file.Name()))
+							suffix, _ := strings.CutPrefix(file.Name(), string(line))
+							candidates = append(candidates, []rune(suffix))
 
 						}
 
