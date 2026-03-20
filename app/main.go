@@ -24,7 +24,7 @@ func main() {
 			readline.PcItem("echo"),
 			readline.PcItem("exit"),
 		)
-		completer := &bellcompleter.BellCompleter{Completer: prefixCompleter}
+		completer := &bellcompleter.BellCompleter{Completer: prefixCompleter, TabCount: 0}
 		cfg := &readline.Config{
 			Prompt:          "$ ",
 			AutoComplete:    completer,
