@@ -54,6 +54,15 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 	}
 
 	if len(runes) > 1 {
+		// Strip trailing spaces before computing LCP (suffixes have " " appended)
+		trimmed := make([][]rune, len(runes))
+		for i, r := range runes {
+			trimmed[i] = []rune(strings.TrimSuffix(string(r), " "))
+		}
+		lcp := findLcp(trimmed)
+		if len(lcp) > 0 {
+			return [][]rune{[]rune(lcp)}, level
+		}
 		if b.TabCount == 1 {
 			fmt.Print("\x07")
 			return nil, 0
@@ -73,4 +82,32 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 	}
 
 	return runes, level
+}
+
+func findLcp(runes [][]rune) string {
+	if len(runes) == 0 {
+		return ""
+	}
+	if len(runes) == 1 {
+		return string(runes[0])
+	}
+
+	minLen := len(runes[0])
+	for _, r := range runes {
+		if len(r) < minLen {
+			minLen = len(r)
+		}
+	}
+
+	var lcp []rune
+	for i := 0; i < minLen; i++ {
+		ch := runes[0][i]
+		for _, r := range runes[1:] {
+			if r[i] != ch {
+				return string(lcp)
+			}
+		}
+		lcp = append(lcp, ch)
+	}
+	return string(lcp)
 }
