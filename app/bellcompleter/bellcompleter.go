@@ -28,7 +28,7 @@ func resolveFile(prefix string) string {
 	return prefix
 }
 
-func findFileMatches(prefix string) ([]string, bool) {
+func findFileMatches(prefix string) []string {
 
 	dir := resolveDir(prefix)
 	fileToComplete := resolveFile(prefix)
@@ -36,7 +36,7 @@ func findFileMatches(prefix string) ([]string, bool) {
 	// fmt.Print(dir + " ")
 	// fmt.Println(entries)
 	if err != nil {
-		return nil, false
+		return nil
 	}
 
 	var matches []string
@@ -47,25 +47,42 @@ func findFileMatches(prefix string) ([]string, bool) {
 			if entry.IsDir() {
 				matches = append(matches, name+"/")
 			} else {
-				matches = append(matches, name)
+				matches = append(matches, name+" ")
 			}
-			return matches, entry.IsDir()
 
 		}
 	}
-	return matches, false
+	return matches
 
 	// sort.Strings(matches)
 	// return matches
 }
 
 func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
+	if b.Previous != string(line) {
+		b.TabCount = 0
+	}
+
+	b.TabCount++
+	b.Previous = string(line)
 
 	if strings.ContainsAny(string(line), " \t") {
 		input := string(line)
 		lastSpace := strings.LastIndexAny(input, " \t")
 		prefix := input[lastSpace+1:]
-		matches, shouldAvoidSpace := findFileMatches(prefix)
+		if len(prefix) == 0 {
+			if b.TabCount == 2 {
+				matches := findFileMatches("./")
+				names := make([]string, len(matches))
+				for i, r := range matches {
+					names[i] = string(line) + strings.TrimSuffix(string(r), " ")
+				}
+				fmt.Print("\n" + strings.Join(names, "  ") + "\n$ " + string(line))
+				return nil, 0
+			}
+			return nil, 0
+		}
+		matches := findFileMatches(prefix)
 		if len(matches) == 0 {
 			fmt.Print("\a")
 			return nil, 0
@@ -73,9 +90,6 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 
 		if len(matches) == 1 {
 			rest := matches[0][len(resolveFile(prefix)):]
-			if !shouldAvoidSpace {
-				rest = rest + " "
-			}
 			return [][]rune{[]rune(rest)}, len(prefix)
 		}
 
@@ -84,12 +98,6 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 	}
 
 	runes, level := b.Completer.Do(line, pos)
-	if b.Previous != string(line) {
-		b.TabCount = 0
-	}
-	b.TabCount++
-	b.Previous = string(line)
-
 	if len(runes) == 0 {
 		paths := strings.Split(os.Getenv("PATH"), ":")
 		type entry struct {
