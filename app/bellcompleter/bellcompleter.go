@@ -44,7 +44,12 @@ func findFileMatches(prefix string) []string {
 		name := entry.Name()
 		// fmt.Println(name + " " + fileToComplete)
 		if strings.HasPrefix(name, fileToComplete) {
-			matches = append(matches, name)
+			if entry.IsDir() {
+				matches = append(matches, name+"/")
+			} else {
+				matches = append(matches, name)
+			}
+
 		}
 	}
 
