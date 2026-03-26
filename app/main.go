@@ -44,6 +44,7 @@ func main() {
 		}
 		line, err := rl.Readline()
 		tokens := parseCommand(line)
+
 		execTokens, outStd, redirectionType, _ := extractPipelineCommands(tokens)
 
 		var res string
@@ -208,9 +209,6 @@ func extractPipelineCommands(tokens []string) ([]string, string, string, bool) {
 			return nil, "", "redirect", false
 		}
 		var commandType string
-		if t == ">" {
-			commandType = "redirect"
-		}
 		switch {
 		case t == ">" || t == "1>":
 			commandType = "redirect"

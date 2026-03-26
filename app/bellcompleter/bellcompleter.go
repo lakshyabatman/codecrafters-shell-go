@@ -28,7 +28,7 @@ func resolveFile(prefix string) string {
 	return prefix
 }
 
-func findFileMatches(prefix string) []string {
+func findFileMatches(prefix string) [][]rune {
 
 	dir := resolveDir(prefix)
 	fileToComplete := resolveFile(prefix)
@@ -39,15 +39,15 @@ func findFileMatches(prefix string) []string {
 		return nil
 	}
 
-	var matches []string
+	var matches [][]rune
 	for _, entry := range entries {
 		name := entry.Name()
 		// fmt.Println(name + " " + fileToComplete)
 		if strings.HasPrefix(name, fileToComplete) {
 			if entry.IsDir() {
-				matches = append(matches, name+"/")
+				matches = append(matches, []rune(name+"/"))
 			} else {
-				matches = append(matches, name+" ")
+				matches = append(matches, []rune(name+" "))
 			}
 
 		}
@@ -71,35 +71,12 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 		lastSpace := strings.LastIndexAny(input, " \t")
 		prefix := input[lastSpace+1:]
 		matches := findFileMatches(prefix)
-		if len(matches) == 0 {
-			fmt.Print("\a")
-			return nil, 0
-		}
-		if b.TabCount == 2 {
-			names := make([]string, len(matches))
-			for i, r := range matches {
-				names[i] = strings.TrimSuffix(string(r), " ")
-			}
-			fmt.Print("\n" + strings.Join(names, "  ") + "\n$ " + string(line))
-			return nil, 0
-
-		}
-		fmt.Print("\a")
-
-		if len(matches) == 1 {
-			rest := matches[0][len(resolveFile(prefix)):]
-			return [][]rune{[]rune(rest)}, len(prefix)
-		}
 		trimmed := make([][]rune, len(matches))
-		for i, r := range matches {
-			trimmed[i] = []rune(strings.TrimSuffix(string(r), " "))
-		}
+		for i, ma := range matches {
 
-		lcp := findLcp(trimmed)
-		if len(lcp) > 0 {
-			return [][]rune{[]rune(lcp[len(prefix):])}, 0
+			trimmed[i] = ma[len(resolveFile(prefix)):]
 		}
-		return nil, 0
+		return b.buildMatches(trimmed, []rune(""), 0, false)
 	}
 
 	runes, level := b.Completer.Do(line, pos)
@@ -132,36 +109,8 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 			level = len(line)
 		}
 	}
+	return b.buildMatches(runes, line, level, true)
 
-	if len(runes) > 1 {
-		// Strip trailing spaces before computing LCP (suffixes have " " appended)
-		trimmed := make([][]rune, len(runes))
-		for i, r := range runes {
-			trimmed[i] = []rune(strings.TrimSuffix(string(r), " "))
-		}
-		lcp := findLcp(trimmed)
-		if len(lcp) > 0 {
-			return [][]rune{[]rune(lcp)}, level
-		}
-		if b.TabCount == 1 {
-			fmt.Print("\x07")
-			return nil, 0
-		}
-		// TabCount == 2: show all matches
-		names := make([]string, len(runes))
-		for i, r := range runes {
-			names[i] = string(line) + strings.TrimSuffix(string(r), " ")
-		}
-		fmt.Print("\n" + strings.Join(names, "  ") + "\n$ " + string(line))
-		return nil, 0
-	}
-
-	if len(runes) == 0 {
-		fmt.Print("\x07")
-		return nil, 0
-	}
-
-	return runes, level
 }
 
 func findLcp(runes [][]rune) string {
@@ -190,4 +139,39 @@ func findLcp(runes [][]rune) string {
 		lcp = append(lcp, ch)
 	}
 	return string(lcp)
+}
+
+func (b *BellCompleter) buildMatches(runes [][]rune, line []rune, level int, appendLine bool) ([][]rune, int) {
+	if len(runes) > 1 {
+		// Strip trailing spaces before computing LCP (suffixes have " " appended)
+		trimmed := make([][]rune, len(runes))
+		for i, r := range runes {
+			trimmed[i] = []rune(strings.TrimSuffix(string(r), " "))
+		}
+		lcp := findLcp(trimmed)
+		if len(lcp) > 0 {
+			return [][]rune{[]rune(lcp)}, level
+		}
+		if b.TabCount == 1 {
+			fmt.Print("\x07")
+			return nil, 0
+		}
+		// TabCount == 2: show all matches
+		names := make([]string, len(runes))
+		for i, r := range runes {
+			names[i] = strings.TrimSuffix(string(r), " ")
+			if appendLine {
+				names[i] = string(line) + names[i]
+			}
+		}
+		fmt.Print("\n" + strings.Join(names, "  ") + "\n$ " + string(line))
+		return nil, 0
+	}
+
+	if len(runes) == 0 {
+		fmt.Print("\x07")
+		return nil, 0
+	}
+
+	return runes, level
 }
