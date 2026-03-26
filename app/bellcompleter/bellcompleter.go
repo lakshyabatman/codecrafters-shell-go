@@ -28,7 +28,7 @@ func resolveFile(prefix string) string {
 	return prefix
 }
 
-func findFileMatches(prefix string) []string {
+func findFileMatches(prefix string) ([]string, bool) {
 
 	dir := resolveDir(prefix)
 	fileToComplete := resolveFile(prefix)
@@ -36,7 +36,7 @@ func findFileMatches(prefix string) []string {
 	// fmt.Print(dir + " ")
 	// fmt.Println(entries)
 	if err != nil {
-		return nil
+		return nil, false
 	}
 
 	var matches []string
@@ -49,12 +49,14 @@ func findFileMatches(prefix string) []string {
 			} else {
 				matches = append(matches, name)
 			}
+			return matches, entry.IsDir()
 
 		}
 	}
+	return matches, false
 
-	sort.Strings(matches)
-	return matches
+	// sort.Strings(matches)
+	// return matches
 }
 
 func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
@@ -63,14 +65,17 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 		input := string(line)
 		lastSpace := strings.LastIndexAny(input, " \t")
 		prefix := input[lastSpace+1:]
-		matches := findFileMatches(prefix)
+		matches, shouldAvoidSpace := findFileMatches(prefix)
 		if len(matches) == 0 {
 			fmt.Print("\a")
 			return nil, 0
 		}
 
 		if len(matches) == 1 {
-			rest := matches[0][len(resolveFile(prefix)):] + " "
+			rest := matches[0][len(resolveFile(prefix)):]
+			if !shouldAvoidSpace {
+				rest = rest + " "
+			}
 			return [][]rune{[]rune(rest)}, len(prefix)
 		}
 
