@@ -15,7 +15,45 @@ type BellCompleter struct {
 	Previous  string
 }
 
+func findFileMatches(prefix string) []string {
+	entries, err := os.ReadDir(".")
+	if err != nil {
+		return nil
+	}
+
+	var matches []string
+	for _, entry := range entries {
+		name := entry.Name()
+		if strings.HasPrefix(name, prefix) {
+			matches = append(matches, name)
+		}
+	}
+
+	sort.Strings(matches)
+	return matches
+}
+
 func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
+
+	if strings.ContainsAny(string(line), " \t") {
+		input := string(line)
+		lastSpace := strings.LastIndexAny(input, " \t")
+		prefix := input[lastSpace+1:]
+		matches := findFileMatches(prefix)
+		if len(matches) == 0 {
+			fmt.Print("\a")
+			return nil, 0
+		}
+
+		if len(matches) == 1 {
+			rest := matches[0][len(prefix):] + " "
+			return [][]rune{[]rune(rest)}, len(prefix)
+		}
+
+		fmt.Print("\a")
+		return nil, 0
+	}
+
 	runes, level := b.Completer.Do(line, pos)
 	if b.Previous != string(line) {
 		b.TabCount = 0
