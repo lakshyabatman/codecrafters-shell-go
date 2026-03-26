@@ -84,6 +84,7 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 			return nil, 0
 
 		}
+		fmt.Print("\a")
 
 		if len(matches) == 1 {
 			rest := matches[0][len(resolveFile(prefix)):]
@@ -93,11 +94,11 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 		for i, r := range matches {
 			trimmed[i] = []rune(strings.TrimSuffix(string(r), " "))
 		}
+
 		lcp := findLcp(trimmed)
 		if len(lcp) > 0 {
 			return [][]rune{[]rune(lcp[len(prefix):])}, 0
 		}
-		fmt.Print("\a")
 		return nil, 0
 	}
 
