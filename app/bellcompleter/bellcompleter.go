@@ -70,22 +70,19 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 		input := string(line)
 		lastSpace := strings.LastIndexAny(input, " \t")
 		prefix := input[lastSpace+1:]
-		if len(prefix) == 0 {
-			if b.TabCount == 2 {
-				matches := findFileMatches("./")
-				names := make([]string, len(matches))
-				for i, r := range matches {
-					names[i] = string(line) + strings.TrimSuffix(string(r), " ")
-				}
-				fmt.Print(strings.Join(names, "  ") + "\n$ " + string(line))
-				return nil, 0
-			}
-			return nil, 0
-		}
 		matches := findFileMatches(prefix)
 		if len(matches) == 0 {
 			fmt.Print("\a")
 			return nil, 0
+		}
+		if b.TabCount == 2 {
+			names := make([]string, len(matches))
+			for i, r := range matches {
+				names[i] = strings.TrimSuffix(string(r), " ")
+			}
+			fmt.Print("\n" + strings.Join(names, "  ") + "\n$ " + string(line))
+			return nil, 0
+
 		}
 
 		if len(matches) == 1 {
