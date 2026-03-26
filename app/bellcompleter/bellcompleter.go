@@ -15,8 +15,26 @@ type BellCompleter struct {
 	Previous  string
 }
 
+func resolveDir(prefix string) string {
+	if strings.ContainsAny(prefix, "/") {
+		return "./" + prefix[:strings.LastIndex(prefix, "/")]
+	}
+	return "."
+}
+func resolveFile(prefix string) string {
+	if strings.ContainsAny(prefix, "/") {
+		return prefix[strings.LastIndex(prefix, "/")+1:]
+	}
+	return prefix
+}
+
 func findFileMatches(prefix string) []string {
-	entries, err := os.ReadDir(".")
+
+	dir := resolveDir(prefix)
+	fileToComplete := resolveFile(prefix)
+	entries, err := os.ReadDir(dir)
+	// fmt.Print(dir + " ")
+	// fmt.Println(entries)
 	if err != nil {
 		return nil
 	}
@@ -24,7 +42,8 @@ func findFileMatches(prefix string) []string {
 	var matches []string
 	for _, entry := range entries {
 		name := entry.Name()
-		if strings.HasPrefix(name, prefix) {
+		// fmt.Println(name + " " + fileToComplete)
+		if strings.HasPrefix(name, fileToComplete) {
 			matches = append(matches, name)
 		}
 	}
@@ -46,7 +65,7 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 		}
 
 		if len(matches) == 1 {
-			rest := matches[0][len(prefix):] + " "
+			rest := matches[0][len(resolveFile(prefix)):] + " "
 			return [][]rune{[]rune(rest)}, len(prefix)
 		}
 
