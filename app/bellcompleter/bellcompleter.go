@@ -71,12 +71,12 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 		lastSpace := strings.LastIndexAny(input, " \t")
 		prefix := input[lastSpace+1:]
 		matches := findFileMatches(prefix)
-		trimmed := make([][]rune, len(matches))
+		// trimmed := make([][]rune, len(matches))
 		// for i, ma := range matches {
 
 		// 	trimmed[i] = ma[len(resolveFile(prefix)):]
 		// }
-		return b.buildMatches(trimmed, []rune(""), 0, false)
+		return b.buildMatches(matches, []rune(""), 0, false)
 	}
 
 	runes, level := b.Completer.Do(line, pos)
