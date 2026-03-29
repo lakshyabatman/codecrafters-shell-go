@@ -72,10 +72,10 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 		prefix := input[lastSpace+1:]
 		matches := findFileMatches(prefix)
 		trimmed := make([][]rune, len(matches))
-		for i, ma := range matches {
+		// for i, ma := range matches {
 
-			trimmed[i] = ma[len(resolveFile(prefix)):]
-		}
+		// 	trimmed[i] = ma[len(resolveFile(prefix)):]
+		// }
 		return b.buildMatches(trimmed, []rune(""), 0, false)
 	}
 
