@@ -164,7 +164,7 @@ func (b *BellCompleter) buildMatches(runes [][]rune, line []rune, level int, app
 				names[i] = string(line) + names[i]
 			}
 		}
-		fmt.Print("\n" + strings.Join(names, "  ") + "\n$ ")
+		fmt.Print("\n" + strings.Join(names, "  ") + "\n")
 		return nil, 0
 	}
 
