@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"slices"
 	"strings"
+	"sync"
 
 	"github.com/chzyer/readline"
 	"github.com/codecrafters-io/shell-starter-go/app/bellcompleter"
@@ -59,102 +61,124 @@ func main() {
 		if err != nil {
 			panic("Failed!")
 		}
-		prevResult := ""
-		for i, command := range commands {
-			execTokens, outStd, redirectionType, _ := extractPipelineCommands(command)
-			var res string
-			var commandError error
-			if command[0] == "exit" {
-				break
-			} else {
-				res, commandError = handleCommand(execTokens, prevResult)
-			}
-			errorOutput := parseError(commandError)
-			switch redirectionType {
-			case "redirect":
-				if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
-					fmt.Errorf(err.Error())
-				}
-				if errorOutput != "" {
-					res = errorOutput
-				}
-			case "redirectError":
-				os.WriteFile(outStd, []byte(errorOutput), 0644)
-
-			case "redirectAppend":
-				f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-				if err != nil {
-					fmt.Printf("%v\n", err)
-				}
-				defer f.Close()
-				if res != "" {
-					if _, err = f.WriteString(fmt.Sprintf("\n%v", res)); err != nil {
-						fmt.Printf("%v\n", err)
-					}
-				}
-
-				if errorOutput != "" {
-					res = errorOutput
-				}
-			case "redirectAppendError":
-				f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-				if err != nil {
-					fmt.Printf("%v\n", err)
-				}
-				defer f.Close()
-				if errorOutput != "" {
-					if _, err = f.WriteString(fmt.Sprintf("\n%v", errorOutput)); err != nil {
-						fmt.Printf("%v\n", err)
-					}
-				}
-			}
-
-			if i == len(commands)-1 {
-				fmt.Println(strings.TrimRight(res, "\n"))
-			} else {
-				prevResult = res
-			}
-
+		var wg sync.WaitGroup
+		pipeReaders := make([]*io.PipeReader, len(commands))
+		pipeWriters := make([]*io.PipeWriter, len(commands))
+		for i := 0; i < len(commands)-1; i++ {
+			pipeReaders[i+1], pipeWriters[i] = io.Pipe()
 		}
+		for i, command := range commands {
+			if command[0] == "exit" {
+				os.Exit(0)
+			}
+			wg.Add(1)
+			go func(cmd []string, idx int) {
+				if pipeReaders[idx] != nil {
+					defer pipeReaders[idx].Close()
+				}
+				if pipeWriters[idx] != nil {
+					defer pipeWriters[idx].Close()
+				}
+				executeCommand(cmd, pipeWriters[idx], pipeReaders[idx])
+				defer wg.Done()
+
+			}(command, i)
+		}
+		wg.Wait()
 
 	}
 }
-func handleCommand(command []string, prevResult string) (string, error) {
+
+func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.PipeReader) {
+	execTokens, outStd, redirectionType, _ := extractPipelineCommands(command)
+
+	stdin, stdout, stderr := getIOs(pipeReader, pipeWriter, redirectionType, outStd)
+
+	var commandError error
 	if command[0] == "echo" {
-		return strings.Join(command[1:], " "), nil
+		fmt.Fprintln(stdout, strings.Join(execTokens[1:], " "))
 	} else if command[0] == "type" {
-		return handleTypeCommand(command), nil
+		fmt.Fprintln(stdout, handleTypeCommand(command))
 	} else if command[0] == "pwd" {
 		currentPath, _ := os.Getwd()
-		return currentPath, nil
+		fmt.Fprintln(stdout, currentPath)
 	} else if command[0] == "cd" {
 		pathToGo := command[1]
 		if command[1] == "~" {
 			pathToGo = os.Getenv("HOME")
 		}
-		err := os.Chdir(pathToGo)
-		if err != nil {
-			return pathToGo + ": No such file or directory", err
-		}
+		os.Chdir(pathToGo)
 	} else {
-		path := checkAndGetInPaths(command[0], strings.Split(pathValue, ":"))
-		if path == "" {
-			return command[0] + ": not found", nil
-		} else {
-			var cmd *exec.Cmd
-			if len(command) == 1 {
-				cmd = exec.Command(command[0])
-			} else {
-				cmd = exec.Command(command[0], command[1:]...)
+		commandError = executeSingleCommand(execTokens, stdin, stdout, stderr)
+
+	}
+	errorOutput := parseError(commandError)
+	switch redirectionType {
+	case "redirect", "redirectAppend":
+		if errorOutput != "" {
+			fmt.Println(errorOutput)
+		}
+	case "redirectError":
+		os.WriteFile(outStd, []byte(errorOutput), 0644)
+	case "redirectAppendError":
+		f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+		defer f.Close()
+		if errorOutput != "" {
+			if _, err = f.WriteString(fmt.Sprintf("\n%v", errorOutput)); err != nil {
+				fmt.Printf("%v\n", err)
 			}
-			if prevResult != "" {
-				cmd.Stdin = strings.NewReader(prevResult)
-			}
-			stdout, err := cmd.Output()
-			return string(stdout), err
 		}
 	}
-	return "", nil
+
+}
+
+func getIOs(pipeReader *io.PipeReader, pipeWriter *io.PipeWriter, redirectionType string, outStd string) (io.Reader, io.Writer, io.Writer) {
+	var stdin io.Reader
+	if pipeReader != nil {
+		stdin = pipeReader
+	}
+	var stdout io.Writer
+	if pipeWriter != nil {
+		stdout = pipeWriter
+	} else {
+		switch redirectionType {
+		case "redirect":
+			f, _ := os.OpenFile(outStd, os.O_CREATE|os.O_WRONLY, 0644)
+			stdout = f
+		case "redirectAppend":
+			f, _ := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			stdout = f
+		default:
+			stdout = os.Stdout
+		}
+	}
+	var stderr io.Writer = os.Stderr
+	return stdin, stdout, stderr
+
+}
+
+func executeSingleCommand(command []string, pipeReader io.Reader, pipeWriter io.Writer, pipeErr io.Writer) error {
+
+	path := checkAndGetInPaths(command[0], strings.Split(pathValue, ":"))
+	if path == "" {
+		fmt.Fprintln(os.Stderr, command[0]+": not found")
+		return nil
+	} else {
+		var cmd *exec.Cmd
+		if len(command) == 1 {
+			cmd = exec.Command(command[0])
+		} else {
+			cmd = exec.Command(command[0], command[1:]...)
+		}
+		cmd.Stdin = pipeReader
+		cmd.Stdout = pipeWriter
+		cmd.Stderr = pipeErr
+		return cmd.Run()
+	}
+
 }
 
 func handleTypeCommand(command []string) string {
