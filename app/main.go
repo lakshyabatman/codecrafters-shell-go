@@ -110,7 +110,7 @@ func main() {
 			}
 
 			if i == len(commands)-1 {
-				fmt.Println(res)
+				fmt.Println(strings.TrimRight(res, "\n"))
 			} else {
 				prevResult = res
 			}
@@ -151,7 +151,7 @@ func handleCommand(command []string, prevResult string) (string, error) {
 				cmd.Stdin = strings.NewReader(prevResult)
 			}
 			stdout, err := cmd.Output()
-			return string(strings.Trim(string(stdout), "\n")), err
+			return string(stdout), err
 		}
 	}
 	return "", nil
