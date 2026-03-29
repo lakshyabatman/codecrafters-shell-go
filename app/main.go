@@ -56,23 +56,18 @@ func main() {
 			}
 
 		}
-		outputFilePath := fmt.Sprintf("./tmp/%d", os.Getpid())
-		shouldPassOutputFile := false
 		if err != nil {
 			panic("Failed!")
 		}
-
+		prevResult := ""
 		for i, command := range commands {
 			execTokens, outStd, redirectionType, _ := extractPipelineCommands(command)
-			if shouldPassOutputFile {
-				execTokens = append(execTokens, outputFilePath)
-			}
 			var res string
 			var commandError error
 			if command[0] == "exit" {
 				break
 			} else {
-				res, commandError = handleCommand(execTokens)
+				res, commandError = handleCommand(execTokens, prevResult)
 			}
 			errorOutput := parseError(commandError)
 			switch redirectionType {
@@ -117,19 +112,14 @@ func main() {
 			if i == len(commands)-1 {
 				fmt.Println(res)
 			} else {
-				output, _ := os.OpenFile(outputFilePath, os.O_CREATE|os.O_WRONLY, 0644)
-				defer output.Close()
-				if _, err = output.WriteString(res); err != nil {
-					fmt.Printf("%v\n", err)
-				}
-				shouldPassOutputFile = true
+				prevResult = res
 			}
 
 		}
 
 	}
 }
-func handleCommand(command []string) (string, error) {
+func handleCommand(command []string, prevResult string) (string, error) {
 	if command[0] == "echo" {
 		return strings.Join(command[1:], " "), nil
 	} else if command[0] == "type" {
@@ -156,6 +146,9 @@ func handleCommand(command []string) (string, error) {
 				cmd = exec.Command(command[0])
 			} else {
 				cmd = exec.Command(command[0], command[1:]...)
+			}
+			if prevResult != "" {
+				cmd.Stdin = strings.NewReader(prevResult)
 			}
 			stdout, err := cmd.Output()
 			return string(strings.Trim(string(stdout), "\n")), err
