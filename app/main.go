@@ -44,64 +44,87 @@ func main() {
 		}
 		line, err := rl.Readline()
 		tokens := parseCommand(line)
+		commands := make([][]string, 1)
+		i := 0
+		for _, token := range tokens {
+			if token == "|" {
+				// fmt.Println("Ci")
+				commands = append(commands, []string{})
+				i++
+			} else {
+				commands[i] = append(commands[i], token)
+			}
 
-		execTokens, outStd, redirectionType, _ := extractPipelineCommands(tokens)
-
-		var res string
-		var commandError error
-		if tokens[0] == "exit" {
-			break
-		} else {
-			res, commandError = handleCommand(execTokens)
 		}
-		errorOutput := parseError(commandError)
-		switch redirectionType {
-		case "redirect":
-			if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
-				fmt.Errorf(err.Error())
+		outputFilePath := fmt.Sprintf("./tmp/%d", os.Getpid())
+		shouldPassOutputFile := false
+		if err != nil {
+			panic("Failed!")
+		}
+
+		for i, command := range commands {
+			execTokens, outStd, redirectionType, _ := extractPipelineCommands(command)
+			if shouldPassOutputFile {
+				execTokens = append(execTokens, outputFilePath)
 			}
-			if errorOutput != "" {
-				fmt.Println(errorOutput)
+			var res string
+			var commandError error
+			if command[0] == "exit" {
+				break
+			} else {
+				res, commandError = handleCommand(execTokens)
 			}
-		case "redirectError":
-			os.WriteFile(outStd, []byte(errorOutput), 0644)
-			if res != "" {
-				fmt.Println(res)
-			}
-		case "redirectAppend":
-			f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-			if err != nil {
-				fmt.Printf("%v\n", err)
-			}
-			defer f.Close()
-			if res != "" {
-				if _, err = f.WriteString(fmt.Sprintf("\n%v", res)); err != nil {
+			errorOutput := parseError(commandError)
+			switch redirectionType {
+			case "redirect":
+				if err := os.WriteFile(outStd, []byte(res), 0644); err != nil {
+					fmt.Errorf(err.Error())
+				}
+				if errorOutput != "" {
+					res = errorOutput
+				}
+			case "redirectError":
+				os.WriteFile(outStd, []byte(errorOutput), 0644)
+
+			case "redirectAppend":
+				f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				if err != nil {
 					fmt.Printf("%v\n", err)
+				}
+				defer f.Close()
+				if res != "" {
+					if _, err = f.WriteString(fmt.Sprintf("\n%v", res)); err != nil {
+						fmt.Printf("%v\n", err)
+					}
+				}
+
+				if errorOutput != "" {
+					res = errorOutput
+				}
+			case "redirectAppendError":
+				f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+				if err != nil {
+					fmt.Printf("%v\n", err)
+				}
+				defer f.Close()
+				if errorOutput != "" {
+					if _, err = f.WriteString(fmt.Sprintf("\n%v", errorOutput)); err != nil {
+						fmt.Printf("%v\n", err)
+					}
 				}
 			}
 
-			if errorOutput != "" {
-				fmt.Println(errorOutput)
-			}
-		case "redirectAppendError":
-			f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-			if err != nil {
-				fmt.Printf("%v\n", err)
-			}
-			defer f.Close()
-			if errorOutput != "" {
-				if _, err = f.WriteString(fmt.Sprintf("\n%v", errorOutput)); err != nil {
+			if i == len(commands)-1 {
+				fmt.Println(res)
+			} else {
+				output, _ := os.OpenFile(outputFilePath, os.O_CREATE|os.O_WRONLY, 0644)
+				defer output.Close()
+				if _, err = output.WriteString(res); err != nil {
 					fmt.Printf("%v\n", err)
 				}
+				shouldPassOutputFile = true
 			}
 
-			if res != "" {
-				fmt.Println(res)
-			}
-		default:
-			if res != "" {
-				fmt.Println(res)
-			}
 		}
 
 	}
