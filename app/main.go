@@ -19,7 +19,7 @@ var _ = fmt.Print
 
 var buildInCommands = []string{"echo", "exit", "type", "pwd", "history"}
 var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
-var pathValue string = os.Getenv("PATH")
+var pathValue string = os.Getenv("PATH") + "/.shell_history"
 
 func main() {
 	historyFile := ".shell_history"
@@ -118,7 +118,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 			fmt.Fprintf(stderr, "cd: %s: No such file or directory\n", pathToGo)
 		}
 	} else if command[0] == "history" {
-		f, _ := os.ReadFile(".shell_history")
+		f, _ := os.ReadFile(os.Getenv("PATH") + "/.shell_history")
 		lines := strings.Split(strings.TrimRight(string(f), "\n"), "\n")
 		linesToPrint := len(lines)
 		if len(execTokens) > 1 {
