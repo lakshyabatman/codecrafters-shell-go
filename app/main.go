@@ -129,7 +129,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 		}
 		for i, l := range lines[(len(lines) - linesToPrint - 1):] {
 			if l != "" {
-				fmt.Fprintf(stdout, "  %d  %s\n", i+1, l)
+				fmt.Fprintf(stdout, "  %d  %s\n", i+(len(lines)-linesToPrint-1), l)
 			}
 		}
 	} else {
