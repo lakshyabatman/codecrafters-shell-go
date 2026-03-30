@@ -19,11 +19,11 @@ var _ = fmt.Print
 
 var buildInCommands = []string{"echo", "exit", "type", "pwd", "history"}
 var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
-var pathValue string = os.Getenv("HOME") + "/.shell_history/" + string(os.Getpid())
+var pathValue string = os.Getenv("HOME") + "/.shell_history/" + strconv.Itoa(os.Getpid())
 
 func main() {
+	// fmt.Println(pathValue)
 	f, _ := os.OpenFile(pathValue, os.O_CREATE, 0600)
-	f.Write([]byte{})
 	f.Close()
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
