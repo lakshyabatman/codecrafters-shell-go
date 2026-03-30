@@ -21,6 +21,8 @@ var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
 var pathValue string = os.Getenv("PATH")
 
 func main() {
+	f, _ := os.OpenFile("history", os.O_CREATE, 0)
+	f.Close()
 	for {
 		prefixCompleter := readline.NewPrefixCompleter(
 			readline.PcItem("echo"),
