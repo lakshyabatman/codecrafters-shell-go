@@ -23,27 +23,28 @@ var pathValue string = os.Getenv("PATH")
 func main() {
 	f, _ := os.OpenFile("history", os.O_CREATE, 0)
 	f.Close()
-	for {
-		prefixCompleter := readline.NewPrefixCompleter(
-			readline.PcItem("echo"),
-			readline.PcItem("exit"),
-		)
-		completer := &bellcompleter.BellCompleter{Completer: prefixCompleter, TabCount: 0}
-		cfg := &readline.Config{
-			Prompt:                 "$ ",
-			AutoComplete:           completer,
-			InterruptPrompt:        "^C",
-			EOFPrompt:              "exit",
-			HistoryFile:            "./history",
-			DisableAutoSaveHistory: false,
-		}
+	prefixCompleter := readline.NewPrefixCompleter(
+		readline.PcItem("echo"),
+		readline.PcItem("exit"),
+	)
+	completer := &bellcompleter.BellCompleter{Completer: prefixCompleter, TabCount: 0}
+	cfg := &readline.Config{
+		Prompt:                 "$ ",
+		AutoComplete:           completer,
+		InterruptPrompt:        "^C",
+		EOFPrompt:              "exit",
+		HistoryFile:            "./history",
+		DisableAutoSaveHistory: false,
+	}
 
-		// Initialize the readline instance.
-		rl, err := readline.NewEx(cfg)
-		if err != nil {
-			panic(err)
-		}
-		defer rl.Close() // Ensure the terminal is restored to its original state on exit
+	// Initialize the readline instance.
+	rl, err := readline.NewEx(cfg)
+	if err != nil {
+		panic(err)
+	}
+	defer rl.Close() // Ensure the terminal is restored to its original state on exit
+
+	for {
 
 		if err != nil {
 			panic("input failed")
@@ -116,8 +117,11 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 		}
 	} else if command[0] == "history" {
 		f, _ := os.ReadFile("history")
-		for _, l := range f {
-			fmt.Printf(string(l))
+		lines := strings.Split(strings.TrimRight(string(f), "\n"), "\n")
+		for i, l := range lines {
+			if l != "" {
+				fmt.Fprintf(stdout, "  %d  %s\n", i+1, l)
+			}
 		}
 	} else {
 		commandError = executeSingleCommand(execTokens, stdin, stdout, stderr)
