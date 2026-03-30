@@ -19,11 +19,11 @@ var _ = fmt.Print
 
 var buildInCommands = []string{"echo", "exit", "type", "pwd", "history"}
 var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
-var pathValue string = ".shell_history/" + strconv.Itoa(os.Getpid())
+var history string = ".shell_history/" + strconv.Itoa(os.Getpid())
 
 func main() {
 	// fmt.Println(pathValue)
-	f, _ := os.OpenFile(pathValue, os.O_CREATE, 0600)
+	f, _ := os.OpenFile(history, os.O_CREATE, 0600)
 	f.Close()
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
@@ -35,7 +35,7 @@ func main() {
 		AutoComplete:           completer,
 		InterruptPrompt:        "^C",
 		EOFPrompt:              "exit",
-		HistoryFile:            pathValue,
+		HistoryFile:            history,
 		DisableAutoSaveHistory: false,
 	}
 
@@ -118,7 +118,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 			fmt.Fprintf(stderr, "cd: %s: No such file or directory\n", pathToGo)
 		}
 	} else if command[0] == "history" {
-		f, _ := os.ReadFile(pathValue)
+		f, _ := os.ReadFile(history)
 		lines := strings.Split(strings.TrimRight(string(f), "\n"), "\n")
 		linesToPrint := len(lines)
 		if len(execTokens) > 1 {
@@ -182,7 +182,7 @@ func getIOs(pipeReader *io.PipeReader, pipeWriter *io.PipeWriter, redirectionTyp
 
 func executeSingleCommand(command []string, pipeReader io.Reader, pipeWriter io.Writer, pipeErr io.Writer) error {
 
-	path := checkAndGetInPaths(command[0], strings.Split(pathValue, ":"))
+	path := checkAndGetInPaths(command[0], strings.Split(os.Getenv("PATH"), ":"))
 	if path == "" {
 		fmt.Fprintln(os.Stderr, command[0]+": not found")
 		return nil
@@ -205,7 +205,7 @@ func handleTypeCommand(command []string) string {
 	if slices.Contains(buildInCommands, command[1]) {
 		return command[1] + " is a shell builtin"
 	} else {
-		path := checkAndGetInPaths(command[1], strings.Split(pathValue, ":"))
+		path := checkAndGetInPaths(command[1], strings.Split(os.Getenv("PATH"), ":"))
 		if path == "" {
 			return command[1] + ": not found"
 		} else {

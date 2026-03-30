@@ -1,0 +1,1 @@
+cat .shell_history/8770 | wc
