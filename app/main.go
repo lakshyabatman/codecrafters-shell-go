@@ -112,6 +112,11 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 		if err := os.Chdir(pathToGo); err != nil {
 			fmt.Fprintf(stderr, "cd: %s: No such file or directory\n", pathToGo)
 		}
+	} else if command[0] == "history" {
+		f, _ := os.ReadFile("history")
+		for _, l := range f {
+			fmt.Printf(string(l))
+		}
 	} else {
 		commandError = executeSingleCommand(execTokens, stdin, stdout, stderr)
 
