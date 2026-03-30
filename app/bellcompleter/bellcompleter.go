@@ -76,7 +76,7 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 
 			trimmed[i] = ma[len(resolveFile(prefix)):]
 		}
-		return b.buildMatches(trimmed, []rune(resolveFile(prefix)), 0, true)
+		return b.buildMatches(trimmed, line, 0, true, resolveFile(prefix))
 	}
 
 	runes, level := b.Completer.Do(line, pos)
@@ -109,7 +109,7 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 			level = len(line)
 		}
 	}
-	return b.buildMatches(runes, line, level, true)
+	return b.buildMatches(runes, line, level, true, "")
 
 }
 
@@ -141,7 +141,7 @@ func findLcp(runes [][]rune) string {
 	return string(lcp)
 }
 
-func (b *BellCompleter) buildMatches(runes [][]rune, line []rune, level int, appendLine bool) ([][]rune, int) {
+func (b *BellCompleter) buildMatches(runes [][]rune, line []rune, level int, appendLine bool, lineToBeAppended string) ([][]rune, int) {
 	if len(runes) > 1 {
 		// Strip trailing spaces before computing LCP (suffixes have " " appended)
 		trimmed := make([][]rune, len(runes))
@@ -161,10 +161,10 @@ func (b *BellCompleter) buildMatches(runes [][]rune, line []rune, level int, app
 		for i, r := range runes {
 			names[i] = strings.TrimSuffix(string(r), " ")
 			if appendLine {
-				names[i] = string(line) + names[i]
+				names[i] = string(lineToBeAppended) + names[i]
 			}
 		}
-		fmt.Print("\n" + strings.Join(names, "  ") + "\n")
+		fmt.Print("\n" + strings.Join(names, "  ") + "\n$ " + string(line))
 		return nil, 0
 	}
 
