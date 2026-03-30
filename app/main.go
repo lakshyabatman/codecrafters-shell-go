@@ -118,21 +118,11 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 		if errorOutput != "" {
 			fmt.Println(errorOutput)
 		}
-	case "redirectError":
-		os.WriteFile(outStd, []byte(errorOutput), 0644)
-	case "redirectAppendError":
-		f, err := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-		if err != nil {
-			fmt.Printf("%v\n", err)
-		}
-		defer f.Close()
-		if errorOutput != "" {
-			if _, err = f.WriteString(fmt.Sprintf("\n%v", errorOutput)); err != nil {
-				fmt.Printf("%v\n", err)
-			}
+	case "redirectError", "redirectAppendError":
+		if stdout != nil {
+
 		}
 	}
-
 }
 
 func getIOs(pipeReader *io.PipeReader, pipeWriter *io.PipeWriter, redirectionType string, outStd string) (io.Reader, io.Writer, io.Writer) {
@@ -141,6 +131,9 @@ func getIOs(pipeReader *io.PipeReader, pipeWriter *io.PipeWriter, redirectionTyp
 		stdin = pipeReader
 	}
 	var stdout io.Writer
+	var stderr io.Writer
+	stdout = os.Stdout
+	stderr = os.Stderr
 	if pipeWriter != nil {
 		stdout = pipeWriter
 	} else {
@@ -151,11 +144,14 @@ func getIOs(pipeReader *io.PipeReader, pipeWriter *io.PipeWriter, redirectionTyp
 		case "redirectAppend":
 			f, _ := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			stdout = f
-		default:
-			stdout = os.Stdout
+		case "redirectError":
+			f, _ := os.OpenFile(outStd, os.O_CREATE|os.O_WRONLY, 0644)
+			stderr = f
+		case "redirectAppendError":
+			f, _ := os.OpenFile(outStd, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			stderr = f
 		}
 	}
-	var stderr io.Writer = os.Stderr
 	return stdin, stdout, stderr
 
 }
