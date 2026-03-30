@@ -120,13 +120,14 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 	} else if command[0] == "history" {
 		f, _ := os.ReadFile(".shell_history")
 		lines := strings.Split(strings.TrimRight(string(f), "\n"), "\n")
-		linesToPrint := len(lines) - 1
+		linesToPrint := len(lines)
 		if len(execTokens) > 1 {
 
 			i, _ := strconv.Atoi(execTokens[1])
 			linesToPrint = min(linesToPrint, i)
+			// fmt.Println(linesToPrint)
 		}
-		for i, l := range lines[linesToPrint-1:] {
+		for i, l := range lines[(len(lines) - linesToPrint):] {
 			if l != "" {
 				fmt.Fprintf(stdout, "  %d  %s\n", i+1, l)
 			}
