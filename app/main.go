@@ -22,6 +22,7 @@ var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
 var pathValue string = os.Getenv("PATH") + "/.shell_history"
 
 func main() {
+	fmt.Println(pathValue)
 	historyFile := ".shell_history"
 	f, _ := os.OpenFile(historyFile, os.O_CREATE, 0600)
 	f.Close()
