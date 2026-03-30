@@ -22,8 +22,7 @@ var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
 var pathValue string = os.Getenv("HOME") + "/.shell_history"
 
 func main() {
-	historyFile := ".shell_history"
-	f, _ := os.OpenFile(historyFile, os.O_CREATE, 0600)
+	f, _ := os.OpenFile(pathValue, os.O_CREATE, 0600)
 	f.Write([]byte{})
 	f.Close()
 	prefixCompleter := readline.NewPrefixCompleter(
@@ -36,7 +35,7 @@ func main() {
 		AutoComplete:           completer,
 		InterruptPrompt:        "^C",
 		EOFPrompt:              "exit",
-		HistoryFile:            historyFile,
+		HistoryFile:            pathValue,
 		DisableAutoSaveHistory: false,
 	}
 
