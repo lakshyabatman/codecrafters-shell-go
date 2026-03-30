@@ -28,10 +28,12 @@ func main() {
 		)
 		completer := &bellcompleter.BellCompleter{Completer: prefixCompleter, TabCount: 0}
 		cfg := &readline.Config{
-			Prompt:          "$ ",
-			AutoComplete:    completer,
-			InterruptPrompt: "^C",
-			EOFPrompt:       "exit",
+			Prompt:                 "$ ",
+			AutoComplete:           completer,
+			InterruptPrompt:        "^C",
+			EOFPrompt:              "exit",
+			HistoryFile:            "./history",
+			DisableAutoSaveHistory: false,
 		}
 
 		// Initialize the readline instance.
