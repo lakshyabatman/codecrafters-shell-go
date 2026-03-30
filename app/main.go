@@ -19,7 +19,7 @@ var _ = fmt.Print
 
 var buildInCommands = []string{"echo", "exit", "type", "pwd", "history"}
 var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
-var pathValue string = os.Getenv("HOME") + "/.shell_history/" + strconv.Itoa(os.Getpid())
+var pathValue string = ".shell_history/" + strconv.Itoa(os.Getpid())
 
 func main() {
 	// fmt.Println(pathValue)
