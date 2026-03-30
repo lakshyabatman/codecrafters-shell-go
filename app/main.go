@@ -107,7 +107,9 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 		if command[1] == "~" {
 			pathToGo = os.Getenv("HOME")
 		}
-		os.Chdir(pathToGo)
+		if err := os.Chdir(pathToGo); err != nil {
+			fmt.Fprintf(stderr, "cd: %s: No such file or directory\n", pathToGo)
+		}
 	} else {
 		commandError = executeSingleCommand(execTokens, stdin, stdout, stderr)
 
