@@ -126,7 +126,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 			i, _ := strconv.Atoi(execTokens[1])
 			linesToPrint = min(linesToPrint, i)
 		}
-		for i, l := range lines[:linesToPrint] {
+		for i, l := range lines[linesToPrint:] {
 			if l != "" {
 				fmt.Fprintf(stdout, "  %d  %s\n", i+1, l)
 			}
