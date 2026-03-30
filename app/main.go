@@ -118,7 +118,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 			fmt.Fprintf(stderr, "cd: %s: No such file or directory\n", pathToGo)
 		}
 	} else if command[0] == "history" {
-		f, _ := os.ReadFile(os.Getenv("HOME") + "/.shell_history")
+		f, _ := os.ReadFile(pathValue)
 		lines := strings.Split(strings.TrimRight(string(f), "\n"), "\n")
 		linesToPrint := len(lines)
 		if len(execTokens) > 1 {
