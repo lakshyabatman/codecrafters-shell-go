@@ -19,7 +19,7 @@ var _ = fmt.Print
 
 var buildInCommands = []string{"echo", "exit", "type", "pwd", "history"}
 var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
-var pathValue string = os.Getenv("HOME") + "/.shell_history"
+var pathValue string = os.Getenv("HOME") + "/.shell_history/" + string(os.Getpid())
 
 func main() {
 	f, _ := os.OpenFile(pathValue, os.O_CREATE, 0600)
