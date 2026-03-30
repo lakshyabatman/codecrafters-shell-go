@@ -109,7 +109,7 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 			level = len(line)
 		}
 	}
-	return b.buildMatches(runes, line, level, true, "")
+	return b.buildMatches(runes, line, level, true, string(line))
 
 }
 
