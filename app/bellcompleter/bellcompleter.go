@@ -76,7 +76,7 @@ func (b *BellCompleter) Do(line []rune, pos int) ([][]rune, int) {
 
 			trimmed[i] = ma[len(resolveFile(prefix)):]
 		}
-		return b.buildMatches(trimmed, line, 0, true, resolveFile(prefix))
+		return b.buildMatches(trimmed, line, len([]rune(prefix)), true, resolveFile(prefix))
 	}
 
 	runes, level := b.Completer.Do(line, pos)

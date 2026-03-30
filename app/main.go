@@ -21,7 +21,8 @@ var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
 var pathValue string = os.Getenv("PATH")
 
 func main() {
-	f, _ := os.OpenFile("history", os.O_CREATE, 0)
+	historyFile := os.Getenv("HOME") + "/.shell_history"
+	f, _ := os.OpenFile(historyFile, os.O_CREATE, 0600)
 	f.Close()
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
@@ -33,7 +34,7 @@ func main() {
 		AutoComplete:           completer,
 		InterruptPrompt:        "^C",
 		EOFPrompt:              "exit",
-		HistoryFile:            "./history",
+		HistoryFile:            historyFile,
 		DisableAutoSaveHistory: false,
 	}
 
@@ -116,7 +117,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 			fmt.Fprintf(stderr, "cd: %s: No such file or directory\n", pathToGo)
 		}
 	} else if command[0] == "history" {
-		f, _ := os.ReadFile("history")
+		f, _ := os.ReadFile(os.Getenv("HOME") + "/.shell_history")
 		lines := strings.Split(strings.TrimRight(string(f), "\n"), "\n")
 		for i, l := range lines {
 			if l != "" {
