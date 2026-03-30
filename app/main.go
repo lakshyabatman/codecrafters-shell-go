@@ -24,6 +24,7 @@ var pathValue string = os.Getenv("HOME") + "/.shell_history"
 func main() {
 	historyFile := ".shell_history"
 	f, _ := os.OpenFile(historyFile, os.O_CREATE, 0600)
+	f.Write([]byte{})
 	f.Close()
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
