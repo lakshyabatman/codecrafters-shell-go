@@ -86,7 +86,7 @@ func main() {
 				if pipeWriters[idx] != nil {
 					defer pipeWriters[idx].Close()
 				}
-				executeCommand(cmd, pipeWriters[idx], pipeReaders[idx])
+				executeCommand(cmd, pipeWriters[idx], pipeReaders[idx], rl)
 				defer wg.Done()
 
 			}(command, i)
@@ -96,7 +96,7 @@ func main() {
 	}
 }
 
-func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.PipeReader) {
+func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.PipeReader, rl *readline.Instance) {
 	execTokens, outStd, redirectionType, _ := extractPipelineCommands(command)
 
 	stdin, stdout, stderr := getIOs(pipeReader, pipeWriter, redirectionType, outStd)
@@ -118,16 +118,15 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 			fmt.Fprintf(stderr, "cd: %s: No such file or directory\n", pathToGo)
 		}
 	} else if command[0] == "history" {
-		fileToBeDisplayed := history
-		if execTokens[1] == "-r" {
-			fileToBeDisplayed = execTokens[2]
+		if len(execTokens) > 1 && execTokens[1] == "-r" {
+			appenedFileIntoHistory(execTokens[2], rl)
+			return
 		}
-		f, _ := os.ReadFile(fileToBeDisplayed)
+		f, _ := os.ReadFile(history)
 		lines := strings.Split(strings.TrimRight(string(f), "\n"), "\n")
 
 		linesToPrint := len(lines)
-		if len(execTokens) == 1 {
-
+		if len(execTokens) > 1 {
 			i, _ := strconv.Atoi(execTokens[1])
 			linesToPrint = min(linesToPrint, i)
 			// fmt.Println(linesToPrint)
@@ -151,6 +150,14 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 		if stdout != nil {
 
 		}
+	}
+}
+
+func appenedFileIntoHistory(input string, rl *readline.Instance) {
+	historyFile, _ := os.ReadFile(input)
+	lines := strings.Split(strings.TrimRight(string(historyFile), "\n"), "\n")
+	for _, line := range lines {
+		rl.SaveHistory(line)
 	}
 }
 
