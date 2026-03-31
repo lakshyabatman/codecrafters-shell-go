@@ -126,6 +126,8 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 				return
 			case "-w":
 				appendHistoryIntoFile(execTokens[2])
+			case "-a":
+				createNewHistory(execTokens[2], rl)
 			}
 		}
 		f, _ := os.ReadFile(history)
@@ -171,6 +173,22 @@ func appendHistoryIntoFile(output string) {
 	file, _ := os.Create(output)
 	historyData, _ := os.ReadFile(history)
 	file.Write(historyData)
+}
+
+func createNewHistory(input string, rl *readline.Instance) {
+	rl.ResetHistory()
+	historyFile, _ := os.ReadFile(input)
+	lines := strings.Split(strings.TrimRight(string(historyFile), "\n"), "\n")
+	historyData, _ := os.ReadFile(history)
+	lines1 := strings.Split(strings.TrimRight(string(historyData), "\n"), "\n")
+	os.Truncate(history, 0)
+	for _, line := range lines {
+		rl.SaveHistory(line)
+	}
+	for _, line := range lines1 {
+		rl.SaveHistory(line)
+	}
+
 }
 
 func getIOs(pipeReader *io.PipeReader, pipeWriter *io.PipeWriter, redirectionType string, outStd string) (io.Reader, io.Writer, io.Writer) {

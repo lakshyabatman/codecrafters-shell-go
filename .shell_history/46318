@@ -1,0 +1,10 @@
+echo "hello "
+echo "world"
+history -a tmp/52326
+apple pear
+raspberry strawberry
+mango orange
+blueberry grape
+echo "hello "
+echo "world"
+history -a tmp/52326
