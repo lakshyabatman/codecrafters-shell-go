@@ -118,9 +118,15 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 			fmt.Fprintf(stderr, "cd: %s: No such file or directory\n", pathToGo)
 		}
 	} else if command[0] == "history" {
-		if len(execTokens) > 1 && execTokens[1] == "-r" {
-			appenedFileIntoHistory(execTokens[2], rl)
-			return
+		if len(execTokens) > 1 {
+
+			switch execTokens[1] {
+			case "-r":
+				appenedFileIntoHistory(execTokens[2], rl)
+				return
+			case "-w":
+				appendHistoryIntoFile(execTokens[2])
+			}
 		}
 		f, _ := os.ReadFile(history)
 		lines := strings.Split(strings.TrimRight(string(f), "\n"), "\n")
@@ -159,6 +165,12 @@ func appenedFileIntoHistory(input string, rl *readline.Instance) {
 	for _, line := range lines {
 		rl.SaveHistory(line)
 	}
+}
+
+func appendHistoryIntoFile(output string) {
+	file, _ := os.Create(output)
+	historyData, _ := os.ReadFile(history)
+	file.Write(historyData)
 }
 
 func getIOs(pipeReader *io.PipeReader, pipeWriter *io.PipeWriter, redirectionType string, outStd string) (io.Reader, io.Writer, io.Writer) {
