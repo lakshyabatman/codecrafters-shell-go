@@ -118,10 +118,15 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 			fmt.Fprintf(stderr, "cd: %s: No such file or directory\n", pathToGo)
 		}
 	} else if command[0] == "history" {
-		f, _ := os.ReadFile(history)
+		fileToBeDisplayed := history
+		if execTokens[1] == "-r" {
+			fileToBeDisplayed = execTokens[2]
+		}
+		f, _ := os.ReadFile(fileToBeDisplayed)
 		lines := strings.Split(strings.TrimRight(string(f), "\n"), "\n")
+
 		linesToPrint := len(lines)
-		if len(execTokens) > 1 {
+		if len(execTokens) == 1 {
 
 			i, _ := strconv.Atoi(execTokens[1])
 			linesToPrint = min(linesToPrint, i)

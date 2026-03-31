@@ -1,0 +1,4 @@
+history -r tmp/52326 
+history -r tmp/52326 2
+history 2  -r tmp/52326 2
+history 2  -r tmp/52326
