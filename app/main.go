@@ -26,6 +26,8 @@ func main() {
 	if os.Getenv("HISTFILE") != "" {
 		history = os.Getenv("HISTFILE")
 	}
+	f, _ := os.OpenFile(history, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+	f.Close()
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
 		readline.PcItem("exit"),
