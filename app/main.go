@@ -24,7 +24,10 @@ var historyAppendOffset int = 0
 
 func main() {
 	// fmt.Println(pathValue)
-	f, _ := os.OpenFile(history, os.O_CREATE, 0600)
+	if os.Getenv("HISTFILE") != "" {
+		history = os.Getenv("HISTFILE")
+	}
+	f, _ := os.Create(history)
 	f.Close()
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
