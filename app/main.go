@@ -23,15 +23,10 @@ var history string = ".shell_history/" + strconv.Itoa(os.Getpid())
 var historyAppendOffset int = 0
 
 func main() {
-	// fmt.Println(pathValue)
 	if os.Getenv("HISTFILE") != "" {
 		history = os.Getenv("HISTFILE")
-		appenedFileIntoHistory(history, rl)
-	} else {
-		f, _ := os.Create(history)
-		defer f.Close()
+		fmt.Println(history)
 	}
-
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
 		readline.PcItem("exit"),
@@ -52,6 +47,12 @@ func main() {
 		panic(err)
 	}
 	defer rl.Close() // Ensure the terminal is restored to its original state on exit
+	if os.Getenv("HISTFILE") != "" {
+		appenedFileIntoHistory(history, rl)
+	} else {
+		f, _ := os.Create(history)
+		defer f.Close()
+	}
 
 	for {
 
