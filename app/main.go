@@ -20,6 +20,7 @@ var _ = fmt.Print
 var buildInCommands = []string{"echo", "exit", "type", "pwd", "history"}
 var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
 var history string = ".shell_history/" + strconv.Itoa(os.Getpid())
+var historyAppendOffset int = 0
 
 func main() {
 	// fmt.Println(pathValue)
@@ -176,10 +177,15 @@ func appendHistoryIntoFile(output string) {
 }
 
 func createNewHistory(output string) {
+	historyData, _ := os.ReadFile(history)
+	lines := strings.Split(strings.TrimRight(string(historyData), "\n"), "\n")
+	newLines := lines[historyAppendOffset:]
+	historyAppendOffset = len(lines)
 	file, _ := os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	defer file.Close()
-	historyData, _ := os.ReadFile(history)
-	file.Write(historyData)
+	for _, line := range newLines {
+		file.WriteString(line + "\n")
+	}
 }
 
 func getIOs(pipeReader *io.PipeReader, pipeWriter *io.PipeWriter, redirectionType string, outStd string) (io.Reader, io.Writer, io.Writer) {
