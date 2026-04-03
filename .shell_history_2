@@ -1,3 +1,6 @@
 echo mango orange strawberry
 echo blueberry apple
 echo "hello world"
+echo "bitcehs"
+echo "ho"
+history -a .shell_history_2

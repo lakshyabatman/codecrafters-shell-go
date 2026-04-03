@@ -62,6 +62,12 @@ func main() {
 		}
 		line, err := rl.Readline()
 		rl.SaveHistory(line)
+		go func(l string) {
+			if hf, ferr := os.OpenFile(history, os.O_APPEND|os.O_WRONLY, 0600); ferr == nil {
+				hf.WriteString(l + "\n")
+				hf.Close()
+			}
+		}(line)
 		tokens := parseCommand(line)
 		commands := make([][]string, 1)
 		i := 0
