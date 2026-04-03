@@ -172,7 +172,6 @@ func appenedFileIntoHistory(input string, rl *readline.Instance) {
 	historyFile, _ := os.ReadFile(input)
 	lines := strings.Split(strings.TrimRight(string(historyFile), "\n"), "\n")
 	for _, line := range lines {
-		fmt.Println(line)
 		rl.SaveHistory(line)
 	}
 }
@@ -191,6 +190,7 @@ func createNewHistory(output string) {
 	file, _ := os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	defer file.Close()
 	for _, line := range newLines {
+		fmt.Println(line)
 		file.WriteString(line + "\n")
 	}
 }
