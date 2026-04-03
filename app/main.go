@@ -38,7 +38,7 @@ func main() {
 		AutoComplete:           completer,
 		InterruptPrompt:        "^C",
 		EOFPrompt:              "exit",
-		HistoryFile:            history,
+		HistoryFile:            "",
 		DisableAutoSaveHistory: true,
 	}
 
