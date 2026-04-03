@@ -173,7 +173,6 @@ func appenedFileIntoHistory(input string, rl *readline.Instance) {
 	historyFile, _ := os.ReadFile(input)
 	lines := strings.Split(strings.TrimRight(string(historyFile), "\n"), "\n")
 	for _, line := range lines {
-		fmt.Println(line)
 		rl.SaveHistory(line)
 	}
 }
