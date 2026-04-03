@@ -25,9 +25,8 @@ var historyAppendOffset int = 0
 func main() {
 	if os.Getenv("HISTFILE") != "" {
 		history = os.Getenv("HISTFILE")
+		fmt.Println(history)
 	}
-	f, _ := os.OpenFile(history, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
-	f.Close()
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
 		readline.PcItem("exit"),
@@ -38,8 +37,8 @@ func main() {
 		AutoComplete:           completer,
 		InterruptPrompt:        "^C",
 		EOFPrompt:              "exit",
-		HistoryFile:            "",
-		DisableAutoSaveHistory: true,
+		HistoryFile:            history,
+		DisableAutoSaveHistory: false,
 	}
 
 	// Initialize the readline instance.
@@ -48,12 +47,12 @@ func main() {
 		panic(err)
 	}
 	defer rl.Close() // Ensure the terminal is restored to its original state on exit
-	// if os.Getenv("HISTFILE") != "" {
-	// 	appenedFileIntoHistory(history, rl)
-	// } else {
-	// 	f, _ := os.Create(history)
-	// 	defer f.Close()
-	// }
+	if os.Getenv("HISTFILE") != "" {
+		appenedFileIntoHistory(history, rl)
+	} else {
+		f, _ := os.Create(history)
+		defer f.Close()
+	}
 
 	for {
 
@@ -61,12 +60,6 @@ func main() {
 			panic("input failed")
 		}
 		line, err := rl.Readline()
-		if line != "" {
-			if hf, ferr := os.OpenFile(history, os.O_APPEND|os.O_WRONLY, 0600); ferr == nil {
-				hf.WriteString(line + "\n")
-				hf.Close()
-			}
-		}
 		tokens := parseCommand(line)
 		commands := make([][]string, 1)
 		i := 0
@@ -180,6 +173,7 @@ func appenedFileIntoHistory(input string, rl *readline.Instance) {
 	historyFile, _ := os.ReadFile(input)
 	lines := strings.Split(strings.TrimRight(string(historyFile), "\n"), "\n")
 	for _, line := range lines {
+		fmt.Println(line)
 		rl.SaveHistory(line)
 	}
 }
