@@ -26,7 +26,10 @@ func main() {
 	if os.Getenv("HISTFILE") != "" {
 		history = os.Getenv("HISTFILE")
 	} else {
-		f, _ := os.Create(history)
+		f, e := os.Create(history)
+		if e != nil {
+			panic(e)
+		}
 		defer f.Close()
 	}
 	prefixCompleter := readline.NewPrefixCompleter(
