@@ -59,7 +59,6 @@ func main() {
 			panic("input failed")
 		}
 		line, err := rl.Readline()
-		rl.SaveHistory(line)
 		tokens := parseCommand(line)
 		commands := make([][]string, 1)
 		i := 0
