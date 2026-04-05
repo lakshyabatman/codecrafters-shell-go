@@ -25,6 +25,9 @@ var historyAppendOffset int = 0
 func main() {
 	if os.Getenv("HISTFILE") != "" {
 		history = os.Getenv("HISTFILE")
+	} else {
+		f, _ := os.Create(history)
+		defer f.Close()
 	}
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
@@ -46,12 +49,6 @@ func main() {
 		panic(err)
 	}
 	defer rl.Close() // Ensure the terminal is restored to its original state on exit
-	if os.Getenv("HISTFILE") != "" {
-		// appenedFileIntoHistory(history, rl)
-	} else {
-		f, _ := os.Create(history)
-		defer f.Close()
-	}
 
 	for {
 
