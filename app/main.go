@@ -185,11 +185,12 @@ func appendHistoryIntoFile(output string) {
 func createNewHistory(output string) {
 	historyData, _ := os.ReadFile(history)
 	lines := strings.Split(strings.TrimRight(string(historyData), "\n"), "\n")
-	newLines := lines[historyAppendOffset:]
-	historyAppendOffset = len(lines)
+
 	existingFileLines, _ := os.ReadFile(output)
-	newLines = append(newLines, strings.Split(strings.Trim(string(existingFileLines), "\n"), "\n")...)
-	file, _ := os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	newLines := strings.Split(strings.Trim(string(existingFileLines), "\n"), "\n")
+	newLines = append(newLines, lines[historyAppendOffset:]...)
+	historyAppendOffset = len(lines)
+	file, _ := os.OpenFile(output, os.O_CREATE|os.O_WRONLY, 0644)
 	defer file.Close()
 	for _, line := range newLines {
 		file.WriteString(line + "\n")
