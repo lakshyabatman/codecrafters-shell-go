@@ -1,0 +1,2 @@
+idontexist 2> /tmp/codex-shell-err
+exit

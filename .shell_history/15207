@@ -1,0 +1,3 @@
+echo first > /tmp/codex-shell-redir
+echo second > /tmp/codex-shell-redir
+exit
