@@ -25,12 +25,13 @@ var historyAppendOffset int = 0
 func main() {
 	if os.Getenv("HISTFILE") != "" {
 		history = os.Getenv("HISTFILE")
+	} else {
+		f, e := os.Create(history)
+		if e != nil {
+			panic(e)
+		}
+		defer f.Close()
 	}
-	f, e := os.Create(history)
-	if e != nil {
-		panic(e)
-	}
-	defer f.Close()
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
 		readline.PcItem("exit"),
