@@ -43,7 +43,7 @@ func main() {
 		InterruptPrompt:        "^C",
 		EOFPrompt:              "exit",
 		HistoryFile:            history,
-		DisableAutoSaveHistory: true,
+		DisableAutoSaveHistory: false,
 	}
 
 	// Initialize the readline instance.
