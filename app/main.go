@@ -192,6 +192,7 @@ func createNewHistory(output string) {
 	existingFileLines, _ := os.ReadFile(output)
 	newLines := strings.Split(strings.Trim(string(existingFileLines), "\n"), "\n")
 	newLines = append(newLines, lines[historyAppendOffset:]...)
+	fmt.Println(lines)
 	historyAppendOffset = len(lines)
 	file, e := os.OpenFile(output, os.O_CREATE|os.O_WRONLY, 0644)
 	if e != nil {
