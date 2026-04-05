@@ -187,12 +187,20 @@ func createNewHistory(output string) {
 	lines := strings.Split(strings.TrimRight(string(historyData), "\n"), "\n")
 	newLines := lines[historyAppendOffset:]
 	historyAppendOffset = len(lines)
+	existingFileLines, _ := os.ReadFile(output)
+	newLines = append(newLines, strings.Split(strings.Trim(string(existingFileLines), "\n"), "\n")...)
 	file, _ := os.OpenFile(output, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	defer file.Close()
 	for _, line := range newLines {
-		fmt.Println(line)
 		file.WriteString(line + "\n")
 	}
+}
+
+func statOrZero(f *os.File) int64 {
+	if fi, err := f.Stat(); err == nil {
+		return fi.Size()
+	}
+	return 0
 }
 
 func getIOs(pipeReader *io.PipeReader, pipeWriter *io.PipeWriter, redirectionType string, outStd string) (io.Reader, io.Writer, io.Writer) {

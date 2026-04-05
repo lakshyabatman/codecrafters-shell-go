@@ -1,0 +1,6 @@
+echo pear blueberry grape
+echo mango strawberry
+echo "hello "
+history -a pear.txt 
+echo pear blueberry grape
+echo mango strawberry

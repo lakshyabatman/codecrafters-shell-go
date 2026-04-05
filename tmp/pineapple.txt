@@ -1,2 +1,0 @@
-echo mango orange strawberry
-echo blueberry apple

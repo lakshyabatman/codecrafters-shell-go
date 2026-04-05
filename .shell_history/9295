@@ -1,0 +1,3 @@
+echo "bitch"
+history -a pear.txt 
+cat pear.txt 
