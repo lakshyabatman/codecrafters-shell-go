@@ -34,6 +34,7 @@ func main() {
 			}
 		}
 	} else {
+		os.MkdirAll(".shell_history", 0755)
 		f, e := os.Create(history)
 		if e != nil {
 			panic(e)
