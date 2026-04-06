@@ -17,7 +17,7 @@ import (
 // Ensures gofmt doesn't remove the "fmt" import in stage 1 (feel free to remove this!)
 var _ = fmt.Print
 
-var buildInCommands = []string{"echo", "exit", "type", "pwd", "history"}
+var buildInCommands = []string{"echo", "exit", "type", "pwd", "history", "jobs"}
 var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
 var history string = os.TempDir() + "/.shell_history_" + strconv.Itoa(os.Getpid())
 var historyAppendOffset int = 0
