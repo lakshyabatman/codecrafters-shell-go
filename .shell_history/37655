@@ -1,5 +1,3 @@
-echo pear blueberry grape
-echo mango strawberry
 echo "hello world"
 echo "is this new"
 history -a pear.txt 

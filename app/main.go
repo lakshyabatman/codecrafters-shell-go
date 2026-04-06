@@ -21,6 +21,7 @@ var buildInCommands = []string{"echo", "exit", "type", "pwd", "history"}
 var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
 var history string = ".shell_history/" + strconv.Itoa(os.Getpid())
 var historyAppendOffset int = 0
+var sessionHistory []string
 
 func main() {
 	if os.Getenv("HISTFILE") != "" {
@@ -59,6 +60,7 @@ func main() {
 			panic("input failed")
 		}
 		line, err := rl.Readline()
+		sessionHistory = append(sessionHistory, line)
 		tokens := parseCommand(line)
 		commands := make([][]string, 1)
 		i := 0
@@ -183,16 +185,10 @@ func appendHistoryIntoFile(output string) {
 }
 
 func createNewHistory(output string) {
-	historyData, e := os.ReadFile(history)
-	if e != nil {
-		panic(e)
-	}
-	lines := strings.Split(strings.TrimRight(string(historyData), "\n"), "\n")
-
 	existingFileLines, _ := os.ReadFile(output)
 	newLines := strings.Split(strings.Trim(string(existingFileLines), "\n"), "\n")
-	newLines = append(newLines, lines[historyAppendOffset:]...)
-	historyAppendOffset = len(lines)
+	newLines = append(newLines, sessionHistory[historyAppendOffset:]...)
+	historyAppendOffset = len(sessionHistory)
 	file, e := os.OpenFile(output, os.O_CREATE|os.O_WRONLY, 0644)
 	if e != nil {
 		panic(e)
