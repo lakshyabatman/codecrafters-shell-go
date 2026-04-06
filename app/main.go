@@ -19,7 +19,7 @@ var _ = fmt.Print
 
 var buildInCommands = []string{"echo", "exit", "type", "pwd", "history"}
 var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
-var history string = ".shell_history/" + strconv.Itoa(os.Getpid())
+var history string = os.TempDir() + "/.shell_history_" + strconv.Itoa(os.Getpid())
 var historyAppendOffset int = 0
 var sessionHistory []string
 
@@ -34,7 +34,6 @@ func main() {
 			}
 		}
 	} else {
-		os.MkdirAll(".shell_history", 0755)
 		f, e := os.Create(history)
 		if e != nil {
 			panic(e)
