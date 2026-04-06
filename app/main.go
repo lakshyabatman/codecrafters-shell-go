@@ -26,6 +26,13 @@ var sessionHistory []string
 func main() {
 	if os.Getenv("HISTFILE") != "" {
 		history = os.Getenv("HISTFILE")
+		if data, err := os.ReadFile(history); err == nil {
+			for _, line := range strings.Split(strings.TrimRight(string(data), "\n"), "\n") {
+				if line != "" {
+					sessionHistory = append(sessionHistory, line)
+				}
+			}
+		}
 	} else {
 		f, e := os.Create(history)
 		if e != nil {
