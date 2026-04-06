@@ -158,6 +158,8 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 				fmt.Fprintf(stdout, "  %d  %s\n", (i + (len(lines) - linesToPrint) + 1), l)
 			}
 		}
+	} else if command[0] == "jobs" {
+		fmt.Print("")
 	} else {
 		commandError = executeSingleCommand(execTokens, stdin, stdout, stderr)
 
