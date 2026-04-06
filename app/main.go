@@ -139,14 +139,12 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 				createNewHistory(execTokens[2])
 			}
 		}
-		f, _ := os.ReadFile(history)
-		lines := strings.Split(strings.TrimRight(string(f), "\n"), "\n")
+		lines := sessionHistory
 
 		linesToPrint := len(lines)
 		if len(execTokens) > 1 {
 			i, _ := strconv.Atoi(execTokens[1])
 			linesToPrint = min(linesToPrint, i)
-			// fmt.Println(linesToPrint)
 		}
 		for i, l := range lines[(len(lines) - linesToPrint):] {
 			if l != "" {

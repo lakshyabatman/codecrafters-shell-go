@@ -1,0 +1,5 @@
+history -r /tmp/pear_test.txt
+echo apple raspberry blueberry
+echo apple orange
+history
+exit
