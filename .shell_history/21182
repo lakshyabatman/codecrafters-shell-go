@@ -1,0 +1,5 @@
+echo pineapple blueberry
+echo mango apple
+echo banana strawberry
+history -w /tmp/raspberry_test.txt
+exit

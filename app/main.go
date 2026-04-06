@@ -180,8 +180,10 @@ func appenedFileIntoHistory(input string, rl *readline.Instance) {
 
 func appendHistoryIntoFile(output string) {
 	file, _ := os.Create(output)
-	historyData, _ := os.ReadFile(history)
-	file.Write(historyData)
+	defer file.Close()
+	for _, line := range sessionHistory {
+		file.WriteString(line + "\n")
+	}
 }
 
 func createNewHistory(output string) {
