@@ -142,10 +142,11 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 			fmt.Fprintf(stdout, "[1] %d\n", p)
 
 		}
-		select {
-		case resp := <-response:
+		go func() {
+			resp := <-response
 			fmt.Fprintf(stdout, "%s", resp)
-		}
+		}()
+
 		return
 	}
 
