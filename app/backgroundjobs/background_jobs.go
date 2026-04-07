@@ -33,7 +33,9 @@ func (bgJ *BackgroundJobManager) AddProcess(
 
 func (bGj *BackgroundJobManager) List(stdout io.Writer) {
 	for idx, process := range bGj.ProcessList {
-
+		if process.State == "Removed" {
+			continue
+		}
 		marker := " "
 		if idx == len(bGj.ProcessList)-1 {
 			marker = "+"
@@ -46,7 +48,9 @@ func (bGj *BackgroundJobManager) List(stdout io.Writer) {
 		}
 		fmt.Fprintf(stdout, "[%d]%s  %s                 %s %s\n",
 			idx+1, marker, process.State, process.Command, suffix)
-
+		if process.State == "Done" {
+			process.State = "Removed"
+		}
 	}
 }
 
