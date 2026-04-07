@@ -117,6 +117,15 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 
 	stdin, stdout, stderr := getIOs(pipeReader, pipeWriter, redirectionType, outStd)
 
+	if command[len(command)-1] == "&" {
+		// its a bg job change!
+		var cmd *exec.Cmd
+		cmd = exec.Command(command[0], command[1:len(command)-1]...)
+		cmd.Start()
+		fmt.Fprintf(stdout, "[1] %d\n", cmd.Process.Pid)
+		return
+	}
+
 	var commandError error
 	if command[0] == "echo" {
 		fmt.Fprintln(stdout, strings.Join(execTokens[1:], " "))
