@@ -139,12 +139,12 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 
 		select {
 		case p := <-pid:
-			fmt.Fprintf(stdout, "[1] %i", p)
+			fmt.Fprintf(stdout, "[1] %d\n", p)
 
 		}
 		select {
 		case resp := <-response:
-			stdout.Write([]byte(resp))
+			fmt.Fprintf(stdout, "%s", resp)
 		}
 		return
 	}
