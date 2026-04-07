@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -112,6 +113,16 @@ func main() {
 	}
 }
 
+func runBgCommand(command *exec.Cmd, response chan string, pid chan int) {
+	buf := &bytes.Buffer{}
+	command.Stdout = buf
+	command.Start()
+	pid <- command.Process.Pid
+	command.Wait()
+	response <- buf.String()
+
+}
+
 func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.PipeReader, rl *readline.Instance) {
 	execTokens, outStd, redirectionType, _ := extractPipelineCommands(command)
 
@@ -119,10 +130,22 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 
 	if command[len(command)-1] == "&" {
 		// its a bg job change!
-		var cmd *exec.Cmd
-		cmd = exec.Command(command[0], command[1:len(command)-1]...)
-		cmd.Start()
-		fmt.Fprintf(stdout, "[1] %d\n", cmd.Process.Pid)
+		bgTokens := command[:len(command)-1]
+		shellCmd := strings.Join(bgTokens, " ")
+		cmd := exec.Command("sh", "-c", shellCmd)
+		response := make(chan string)
+		pid := make(chan int)
+		go runBgCommand(cmd, response, pid)
+
+		select {
+		case p := <-pid:
+			fmt.Println(p)
+
+		}
+		select {
+		case resp := <-response:
+			stdout.Write([]byte(resp))
+		}
 		return
 	}
 
