@@ -40,8 +40,12 @@ func (bGj *BackgroundJobManager) List(stdout io.Writer) {
 		} else if idx == len(bGj.ProcessList)-2 {
 			marker = "-"
 		}
-		fmt.Fprintf(stdout, "[%d]%s  %s                 %s\n",
-			idx+1, marker, process.State, process.Command)
+		suffix := "&"
+		if process.State == "Done" {
+			suffix = ""
+		}
+		fmt.Fprintf(stdout, "[%d]%s  %s                 %s %s\n",
+			idx+1, marker, process.State, process.Command, suffix)
 
 	}
 }

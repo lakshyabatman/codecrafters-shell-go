@@ -147,7 +147,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 
 		select {
 		case p := <-pid:
-			backgroundJobManager.AddProcess(p, stdout, strings.Join(command, " "))
+			backgroundJobManager.AddProcess(p, stdout, strings.Join(command[:len(command)-1], " "))
 		}
 		go func() {
 			resp := <-response
