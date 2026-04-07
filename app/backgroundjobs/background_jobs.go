@@ -32,8 +32,14 @@ func (bgJ *BackgroundJobManager) AddProcess(
 func (bGj *BackgroundJobManager) List(stdout io.Writer) {
 	for idx, process := range bGj.ProcessList {
 
-		// [1]+  Running                 sleep 10 &
-		fmt.Fprintf(stdout, "[%d]+  Running                 %s\n", idx+1, process.Command)
+		marker := " "
+		if idx == len(bGj.ProcessList)-1 {
+			marker = "+"
+		} else if idx == len(bGj.ProcessList)-2 {
+			marker = "-"
+		}
+		fmt.Fprintf(stdout, "[%d]%s  Running                 %s\n",
+			idx+1, marker, process.Command)
 
 	}
 }
