@@ -3,6 +3,7 @@ package backgroundjobs
 import (
 	"fmt"
 	"io"
+	"slices"
 )
 
 type ProcessItem struct {
@@ -32,10 +33,8 @@ func (bgJ *BackgroundJobManager) AddProcess(
 }
 
 func (bGj *BackgroundJobManager) List(stdout io.Writer) {
+	garbage := []int{}
 	for idx, process := range bGj.ProcessList {
-		if process.State == "Removed" {
-			continue
-		}
 		marker := " "
 		if idx == len(bGj.ProcessList)-1 {
 			marker = "+"
@@ -49,9 +48,13 @@ func (bGj *BackgroundJobManager) List(stdout io.Writer) {
 		fmt.Fprintf(stdout, "[%d]%s  %s                 %s %s\n",
 			idx+1, marker, process.State, process.Command, suffix)
 		if process.State == "Done" {
-			process.State = "Removed"
+			garbage = append(garbage, process.Pid)
 		}
 	}
+
+	bGj.ProcessList = slices.DeleteFunc(bGj.ProcessList, func(p *ProcessItem) bool {
+		return slices.Contains(garbage, p.Pid)
+	})
 }
 
 func (bGj *BackgroundJobManager) MarkJobFinished(pid int) {
