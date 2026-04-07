@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/chzyer/readline"
+	"github.com/codecrafters-io/shell-starter-go/app/backgroundjobs"
 	"github.com/codecrafters-io/shell-starter-go/app/bellcompleter"
 )
 
@@ -23,6 +24,9 @@ var dividerCommands = []string{">", "1>", "2>", ">>", "1>>", "2>>"}
 var history string = os.TempDir() + "/.shell_history_" + strconv.Itoa(os.Getpid())
 var historyAppendOffset int = 0
 var sessionHistory []string
+var backgroundJobManager = backgroundjobs.BackgroundJobManager{
+	ProcessList: []backgroundjobs.ProcessItem{},
+}
 
 func main() {
 	if os.Getenv("HISTFILE") != "" {
@@ -41,6 +45,7 @@ func main() {
 		}
 		defer f.Close()
 	}
+
 	prefixCompleter := readline.NewPrefixCompleter(
 		readline.PcItem("echo"),
 		readline.PcItem("exit"),
@@ -135,12 +140,12 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 		cmd := exec.Command("sh", "-c", shellCmd)
 		response := make(chan string)
 		pid := make(chan int)
+
 		go runBgCommand(cmd, response, pid)
 
 		select {
 		case p := <-pid:
-			fmt.Fprintf(stdout, "[1] %d\n", p)
-
+			backgroundJobManager.AddProcess(p, stdout, strings.Join(command, " "))
 		}
 		go func() {
 			resp := <-response
@@ -192,7 +197,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 			}
 		}
 	} else if command[0] == "jobs" {
-		fmt.Print("")
+		backgroundJobManager.List(stdout)
 	} else {
 		commandError = executeSingleCommand(execTokens, stdin, stdout, stderr)
 
