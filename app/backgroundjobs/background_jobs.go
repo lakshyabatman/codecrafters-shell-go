@@ -12,19 +12,21 @@ type ProcessItem struct {
 }
 
 type BackgroundJobManager struct {
-	ProcessList []ProcessItem
+	ProcessList  []*ProcessItem
+	PidtoProcess map[int]*ProcessItem
 }
 
 func (bgJ *BackgroundJobManager) AddProcess(
 	pid int,
 	stdout io.Writer,
 	command string) {
-
-	bgJ.ProcessList = append(bgJ.ProcessList, ProcessItem{
+	newPr := ProcessItem{
 		Command: command,
 		State:   "Running",
 		Pid:     pid,
-	})
+	}
+	bgJ.ProcessList = append(bgJ.ProcessList, &newPr)
+	bgJ.PidtoProcess[pid] = &newPr
 	i := len(bgJ.ProcessList)
 	fmt.Fprintf(stdout, "[%d] %d\n", i, pid)
 }
@@ -42,4 +44,8 @@ func (bGj *BackgroundJobManager) List(stdout io.Writer) {
 			idx+1, marker, process.State, process.Command)
 
 	}
+}
+
+func (bGj *BackgroundJobManager) MarkJobFinished(pid int) {
+	bGj.PidtoProcess[pid].State = "Done"
 }

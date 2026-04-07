@@ -25,7 +25,8 @@ var history string = os.TempDir() + "/.shell_history_" + strconv.Itoa(os.Getpid(
 var historyAppendOffset int = 0
 var sessionHistory []string
 var backgroundJobManager = backgroundjobs.BackgroundJobManager{
-	ProcessList: []backgroundjobs.ProcessItem{},
+	ProcessList:  []*backgroundjobs.ProcessItem{},
+	PidtoProcess: make(map[int]*backgroundjobs.ProcessItem),
 }
 
 func main() {
@@ -125,6 +126,7 @@ func runBgCommand(command *exec.Cmd, response chan string, pid chan int) {
 	pid <- command.Process.Pid
 	command.Wait()
 	response <- buf.String()
+	backgroundJobManager.MarkJobFinished(command.Process.Pid)
 
 }
 
@@ -150,6 +152,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 		go func() {
 			resp := <-response
 			fmt.Fprintf(stdout, "%s", resp)
+
 		}()
 
 		return
