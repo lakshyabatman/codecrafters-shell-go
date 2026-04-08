@@ -74,7 +74,6 @@ func main() {
 			panic("input failed")
 		}
 		line, err := rl.Readline()
-		backgroundJobManager.ReapFinished(os.Stdout)
 		sessionHistory = append(sessionHistory, line)
 		tokens := parseCommand(line)
 		commands := make([][]string, 1)
@@ -111,6 +110,7 @@ func main() {
 					defer pipeWriters[idx].Close()
 				}
 				executeCommand(cmd, pipeWriters[idx], pipeReaders[idx], rl)
+				backgroundJobManager.ReapFinished(os.Stdout)
 				defer wg.Done()
 
 			}(command, i)
