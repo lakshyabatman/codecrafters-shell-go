@@ -69,7 +69,7 @@ func (bGj *BackgroundJobManager) ReapFinished(stdout io.Writer) {
 	var remaining []*ProcessItem
 	for _, process := range bGj.ProcessList {
 		if process.State == "Done" {
-			fmt.Fprintf(stdout, "[%d]-  Done                 %s\n",
+			fmt.Fprintf(stdout, "[%d]+  Done                 %s\n",
 				process.indx, process.Command)
 			delete(bGj.PidtoProcess, process.Pid)
 		} else {
