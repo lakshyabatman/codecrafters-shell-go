@@ -1,5 +1,0 @@
-echo strawberry blueberry pear
-echo apple pear strawberry
-echo strawberry grape pineapple
-history -a /tmp/pear_test.txt
-exit

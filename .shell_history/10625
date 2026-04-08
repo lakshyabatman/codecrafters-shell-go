@@ -1,5 +1,0 @@
-echo "hello "
-history -a pear.txt 
-echo "hello world"
-history -a pear.txt 
-cat pear.txt 

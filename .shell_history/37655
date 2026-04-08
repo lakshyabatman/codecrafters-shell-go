@@ -1,3 +1,0 @@
-echo "hello world"
-echo "is this new"
-history -a pear.txt 

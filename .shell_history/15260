@@ -1,3 +1,0 @@
-echo longvalue > /tmp/codex-shell-redir
-echo x > /tmp/codex-shell-redir
-exit

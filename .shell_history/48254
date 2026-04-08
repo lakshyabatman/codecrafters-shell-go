@@ -1,4 +1,0 @@
-echo blueberry apple
-echo "hello "
-echo "world"
-history -a tmp/pineapple.txt
