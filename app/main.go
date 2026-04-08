@@ -74,6 +74,7 @@ func main() {
 			panic("input failed")
 		}
 		line, err := rl.Readline()
+		backgroundJobManager.ReapFinished(os.Stdout)
 		sessionHistory = append(sessionHistory, line)
 		tokens := parseCommand(line)
 		commands := make([][]string, 1)
@@ -119,15 +120,14 @@ func main() {
 	}
 }
 
-func runBgCommand(command *exec.Cmd, response chan string, pid chan int, stdout io.Writer) {
+func runBgCommand(command *exec.Cmd, response chan string, pid chan int) {
 	buf := &bytes.Buffer{}
 	command.Stdout = buf
 	command.Start()
 	pid <- command.Process.Pid
 	command.Wait()
 	response <- buf.String()
-	backgroundJobManager.MarkJobFinished(command.Process.Pid, stdout)
-
+	backgroundJobManager.MarkJobFinished(command.Process.Pid)
 }
 
 func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.PipeReader, rl *readline.Instance) {
@@ -143,7 +143,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 		response := make(chan string)
 		pid := make(chan int)
 
-		go runBgCommand(cmd, response, pid, stdout)
+		go runBgCommand(cmd, response, pid)
 
 		select {
 		case p := <-pid:
