@@ -119,14 +119,14 @@ func main() {
 	}
 }
 
-func runBgCommand(command *exec.Cmd, response chan string, pid chan int) {
+func runBgCommand(command *exec.Cmd, response chan string, pid chan int, stdout io.Writer) {
 	buf := &bytes.Buffer{}
 	command.Stdout = buf
 	command.Start()
 	pid <- command.Process.Pid
 	command.Wait()
 	response <- buf.String()
-	backgroundJobManager.MarkJobFinished(command.Process.Pid)
+	backgroundJobManager.MarkJobFinished(command.Process.Pid, stdout)
 
 }
 
@@ -143,7 +143,7 @@ func executeCommand(command []string, pipeWriter *io.PipeWriter, pipeReader *io.
 		response := make(chan string)
 		pid := make(chan int)
 
-		go runBgCommand(cmd, response, pid)
+		go runBgCommand(cmd, response, pid, stdout)
 
 		select {
 		case p := <-pid:

@@ -59,6 +59,16 @@ func (bGj *BackgroundJobManager) List(stdout io.Writer) {
 	})
 }
 
-func (bGj *BackgroundJobManager) MarkJobFinished(pid int) {
+func (bGj *BackgroundJobManager) MarkJobFinished(pid int, stdout io.Writer) {
 	bGj.PidtoProcess[pid].State = "Done"
+
+	process := bGj.PidtoProcess[pid]
+
+	fmt.Fprintf(stdout, "[%d]%s  %s                 %s %s\n",
+		process.indx, "-", process.State, process.Command, "")
+
+	bGj.ProcessList = slices.DeleteFunc(bGj.ProcessList, func(p *ProcessItem) bool {
+		return p.Pid == pid
+	})
+
 }
